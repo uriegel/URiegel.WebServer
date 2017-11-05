@@ -1,22 +1,40 @@
 module SocketSession
 open System.IO
 open System.Net.Sockets
+open System.Security.Authentication
+open RequestSession
 
 type SocketSession = {
-    asyncReceive: Async<unit>
+    tcpClient: TcpClient
+    asyncRequestReceive: unit->Async<bool>
 }
 
-// TODO: networktstream in SocketSession record
-let mutable private networkStream: Stream option = None
-
-let private asyncReceive (tcpClient: TcpClient) = 
-    async  {
-        if networkStream.IsNone then
-            networkStream <- Some (tcpClient.GetStream () :> Stream) 
-        do! Async.Sleep(2999) 
+let private asyncStartReceive (socketSession: SocketSession)() = 
+    async {
+        let rec asyncReceive () = 
+            async  {
+                try
+                    let! result = socketSession.asyncRequestReceive ()
+                    if result then 
+                        do! asyncReceive ()
+                with 
+                | :? AuthenticationException as ae
+                    -> printfn "An authentication error has occurred while reading socket, endpoint: %s, error: %s" (socketSession.tcpClient.Client.RemoteEndPoint.ToString()) (ae.ToString ()) 
+                | :? IOException 
+                    -> socketSession.tcpClient.Close ()
+                // TODO
+                // | :? CloseException 
+                //     -> socketSession.tcpClient.Close ()
+                | :? SocketException 
+                    -> socketSession.tcpClient.Close ()
+                | ex -> printfn "An error has occurred while reading socket: error: %s" (ex.ToString ())
+            }
+        do! asyncReceive ()
     }
 
 let create (tcpClient: TcpClient) = 
-    {
-        asyncReceive = asyncReceive tcpClient
+    let socketSession = {
+        tcpClient = tcpClient
+        asyncRequestReceive = create tcpClient
     }
+    asyncStartReceive socketSession

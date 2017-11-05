@@ -4,10 +4,9 @@ open System.Net
 open System.Net.Sockets
 open SocketSession
 
-// TODO: port 80
 // TODO: RequestSession mit Headers
 // TODO: Send Not found
-// TODO: TLS mit port 443
+// TODO: TLS
 
 type Server = {
     start: unit->unit
@@ -17,8 +16,8 @@ type Server = {
 let private asyncOnConnected (tcpClient: TcpClient) = 
     async {
         try
-            let session = create tcpClient
-            do! session.asyncReceive
+            let asyncReceive = create tcpClient
+            do! asyncReceive ()
         with
         | :? SocketException as se when se.NativeErrorCode = 10054
             -> ()
