@@ -4,6 +4,11 @@ open System.Net
 open System.Net.Sockets
 open SocketSession
 
+// TODO: port 80
+// TODO: RequestSession mit Headers
+// TODO: Send Not found
+// TODO: TLS mit port 443
+
 type Server = {
     start: unit->unit
     stop: unit->unit
