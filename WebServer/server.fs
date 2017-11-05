@@ -1,11 +1,26 @@
 module Server
+open System
 open System.Net
 open System.Net.Sockets
+open SocketSession
 
 type Server = {
     start: unit->unit
     stop: unit->unit
 }
+
+let private asyncOnConnected (tcpClient: TcpClient) = 
+    async {
+        try
+            let session = create tcpClient
+            do! session.asyncReceive
+        with
+        | :? SocketException as se when se.NativeErrorCode = 10054
+            -> ()
+        | :? ObjectDisposedException 
+            -> ()
+        | ex -> printfn "Error in asyncOnConnected occurred: %s" (ex.ToString ()) 
+    }
 
 let private asyncStartConnecting (listener: TcpListener) = 
     async {
@@ -13,7 +28,7 @@ let private asyncStartConnecting (listener: TcpListener) =
             async {
                 try
                     let! client = listener.AcceptTcpClientAsync () |> Async.AwaitTask
-                    let test = client
+                    asyncOnConnected client |> Async.Start
                     do! asyncConnect ()
                 with
                 | :? SocketException as se when se.SocketErrorCode = SocketError.Interrupted 

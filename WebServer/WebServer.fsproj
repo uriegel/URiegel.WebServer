@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="configuration.fs" />
     <Compile Include="ipv6-listener-factory.fs" />
+    <Compile Include="socket-session.fs" />
     <Compile Include="server.fs" />
   </ItemGroup>
 
