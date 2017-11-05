@@ -1,7 +1,7 @@
-module SocketSession
+module RequestSession
 open System.Net.Sockets
 
-type SocketSession = {
+type RequestSession = {
     asyncReceive: Async<unit>
 }
 
