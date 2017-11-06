@@ -20,18 +20,16 @@ type Server = {
     stop: unit->unit
 }
 
-let private asyncOnConnected (tcpClient: TcpClient) = 
-    async {
-        try
-            let asyncReceive = create tcpClient
-            do! asyncReceive ()
-        with
-        | :? SocketException as se when se.NativeErrorCode = 10054
-            -> ()
-        | :? ObjectDisposedException 
-            -> ()
-        | ex -> printfn "Error in asyncOnConnected occurred: %s" (ex.ToString ()) 
-    }
+let private onConnected (tcpClient: TcpClient) = 
+    try
+        create tcpClient () |> Async.Start
+    with
+    | :? SocketException as se when se.NativeErrorCode = 10054
+        -> ()
+    | :? ObjectDisposedException 
+        -> ()
+    | ex -> printfn "Error in asyncOnConnected occurred: %s" (ex.ToString ()) 
+
 
 let private asyncStartConnecting (listener: TcpListener) = 
     async {
@@ -39,7 +37,7 @@ let private asyncStartConnecting (listener: TcpListener) =
             async {
                 try
                     let! client = listener.AcceptTcpClientAsync () |> Async.AwaitTask
-                    asyncOnConnected client |> Async.Start
+                    onConnected client 
                     do! asyncConnect ()
                 with
                 | :? SocketException as se when se.SocketErrorCode = SocketError.Interrupted 

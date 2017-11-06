@@ -2,6 +2,7 @@ module RequestSession
 open System
 open System.IO
 open System.Net.Sockets
+open System.Security.Authentication
 open System.Text
 
 type RequestSession = {
@@ -63,28 +64,33 @@ let rec private asyncReadHeaders (buffer: Buffer) =
         return result
     }
 
-let private asyncReceive (session: RequestSession) () = 
+let rec private asyncReceive (session: RequestSession)() =
     async {
         try 
-            let buffer = {
+            let buffer1 = {
                 session = session
                 buffer = Array.zeroCreate 20000
                 currentIndex = 0
                 read = 0
             } 
-            let! buffer = asyncReadBuffer buffer
+            let! buffer = asyncReadBuffer buffer1
             if buffer.read = 0 then
-                return false
-            else
-                printf "Suppa 2"
-                let! result = asyncReadHeaders buffer
-                printf "Suppa"
-                let header = result.header
-                let affe = header
-                return true
+                return! asyncReceive () 
+            // if buffer.read = 0 then
+            //     return
+            // else
+            //     printf "Suppa 2"
+            //     let! result = asyncReadHeaders buffer
+            //     printf "Suppa"
+            //     let header = result.header
+            //     let affe = header
+            //     return
         with 
             | :? SocketException as se when se.SocketErrorCode = SocketError.TimedOut -> 
                 printfn "Socket session closed, Timeout has occurred"
+                close session true
+                return false
+            | :? SocketException -> 
                 close session true
                 return false
             // TODO: Keine Exception
@@ -96,10 +102,15 @@ let private asyncReceive (session: RequestSession) () =
             | :? IOException ->
                 close session true
                 return false
+            | :? AuthenticationException as ae -> 
+                printfn "An authentication error has occurred while reading socket, endpoint: %s, error: %s" (socketSession.tcpClient.Client.RemoteEndPoint.ToString()) (ae.ToString ()) 
+                return false
             | ex -> 
                 printfn "Socket session closed, an error has occurred while receiving: %s" (ex.ToString ())
                 close session true
-                return false
+                return false 
+
+        
     }
 
 let create (tcpClient: TcpClient) =
