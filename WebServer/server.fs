@@ -2,7 +2,7 @@ module Server
 open System
 open System.Net
 open System.Net.Sockets
-open SocketSession
+open RequestSession
 
 // TODO: RequestSession mit Headers:
 // TODO: async nur bis Daten da, keine Verschachtelten async-Blöcke in der SocketSession
@@ -22,7 +22,7 @@ type Server = {
 
 let private onConnected (tcpClient: TcpClient) = 
     try
-        create tcpClient () |> Async.Start
+        create tcpClient |> ignore
     with
     | :? SocketException as se when se.NativeErrorCode = 10054
         -> ()
@@ -31,27 +31,23 @@ let private onConnected (tcpClient: TcpClient) =
     | ex -> printfn "Error in asyncOnConnected occurred: %s" (ex.ToString ()) 
 
 
-let private asyncStartConnecting (listener: TcpListener) = 
-    async {
-        let rec asyncConnect () = 
-            async {
-                try
-                    let! client = listener.AcceptTcpClientAsync () |> Async.AwaitTask
-                    onConnected client 
-                    do! asyncConnect ()
-                with
-                | :? SocketException as se when se.SocketErrorCode = SocketError.Interrupted 
-                    -> printfn "Stopping listening..."
-                | ex -> printfn "Could not stop HTTP Listener: %s" (ex.ToString ()) 
-            }
-        do! asyncConnect ()
-    } |> Async.Start
+let rec beginConnect (listener: TcpListener) = 
+    listener.BeginAcceptTcpClient (fun a ->
+        try
+            let client = listener.EndAcceptTcpClient (a) 
+            onConnected client 
+            beginConnect listener
+        with
+        | :? SocketException as se when se.SocketErrorCode = SocketError.Interrupted 
+            -> printfn "Stopping listening..."
+        | ex -> printfn "Could not stop HTTP Listener: %s" (ex.ToString ()) 
+    , null) |> ignore
 
 let private start (listener: TcpListener) () = 
     try
         printfn "Starting HTTP Listener..."
         listener.Start ()
-        asyncStartConnecting listener
+        beginConnect listener
         printfn "HTTP Listener started"
     with 
     | ex -> 
