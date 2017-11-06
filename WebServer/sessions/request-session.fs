@@ -52,7 +52,7 @@ let rec private asyncReadHeaders (buffer: Buffer) =
                 return result
             | false ->
                 let! buffer = asyncReadBuffer buffer
-                // TODO: Exception
+                // TODO: Keine Exception
                 if buffer.read = 0 then 
                     failwith "Affe"
 
@@ -87,7 +87,7 @@ let private asyncReceive (session: RequestSession) () =
                 printfn "Socket session closed, Timeout has occurred"
                 close session true
                 return false
-            // TODO
+            // TODO: Keine Exception
             // | :? CloseException 
             //     -> socketSession.tcpClient.Close ()
             | :? ObjectDisposedException ->

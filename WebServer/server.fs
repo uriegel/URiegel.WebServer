@@ -4,7 +4,14 @@ open System.Net
 open System.Net.Sockets
 open SocketSession
 
-// TODO: RequestSession mit Headers
+// TODO: RequestSession mit Headers:
+// TODO: async nur bis Daten da, keine Verschachtelten async-Blöcke in der SocketSession
+// TODO: Asynchrones rekursives Einlesen, bis entweder read = 0 oder Header-EndIndex gesetzt
+
+// TODO: Dann HEader einlesen synchron
+
+// TODO: async beim Einlesen des Payloads
+
 // TODO: Send Not found
 // TODO: TLS
 

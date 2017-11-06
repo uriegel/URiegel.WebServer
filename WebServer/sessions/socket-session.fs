@@ -10,6 +10,13 @@ type SocketSession = {
 }
 
 let private asyncStartReceive (socketSession: SocketSession)() = 
+    // TODO: Keine verschachtelten async-Blöcke
+    // let rec retry work resultOk retries = async {
+    //   let! res = work
+    //   if (resultOk res) || (retries = 0) then return res
+    //   else return! retry work resultOk (retries - 1) }
+
+
     async {
         let rec asyncReceive () = 
             async  {
@@ -22,7 +29,7 @@ let private asyncStartReceive (socketSession: SocketSession)() =
                     -> printfn "An authentication error has occurred while reading socket, endpoint: %s, error: %s" (socketSession.tcpClient.Client.RemoteEndPoint.ToString()) (ae.ToString ()) 
                 | :? IOException 
                     -> socketSession.tcpClient.Close ()
-                // TODO
+                // TODO: Keine Exception
                 // | :? CloseException 
                 //     -> socketSession.tcpClient.Close ()
                 | :? SocketException 
