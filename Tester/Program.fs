@@ -9,6 +9,22 @@ let configuration = Configuration.create {
             WebRoot = @"D:\Projekte\WebServerSharp\web"
     }
 
+type test =
+    {
+        x: int
+        y: Lazy<int>
+    }
+    member this.Sum = this.x + this.y.Value
+
+let affe = {
+    x = 9
+    y = Lazy<int>.Create(fun () -> 
+    printfn "Lege an"
+    34)
+}
+
+let tes = affe.Sum
+
 try
     let server = create configuration
     server.start ()
