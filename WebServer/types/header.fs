@@ -13,10 +13,11 @@ type Header = {
     url: string
     http: string
     http10: bool
+    headers: Map<string,string>
 }
 
 let initialize headerResult = 
-    let headerParts = headerResult.header.Split(Array.create 1 "\r\n", StringSplitOptions.RemoveEmptyEntries)
+    let headerParts = headerResult.header.Split ([|"\r\n"|], StringSplitOptions.RemoveEmptyEntries)
 
     let method = 
         if headerParts.[0].StartsWith("GET") then
@@ -28,15 +29,24 @@ let initialize headerResult =
         else
             failwithf "Unknown HTTP method %s" <| headerParts.[0]           
 
-    let start = headerParts.[0].IndexOf(' ') + 1
-    let url = headerParts.[0].Substring(start, headerParts.[0].IndexOf(" HTTP") - start)
+    let start = headerParts.[0].IndexOf (' ') + 1
+    let url = headerParts.[0].Substring (start, headerParts.[0].IndexOf(" HTTP") - start)
 
-    let start = headerParts.[0].IndexOf(' ', start) + 1
-    let http = headerParts.[0].Substring(start)
-    let http10 = String.Compare(http, "http/1.0", true) = 0            
+    let start = headerParts.[0].IndexOf (' ', start) + 1
+    let http = headerParts.[0].Substring (start)
+    let http10 = String.Compare (http, "http/1.0", true) = 0            
+
+    let headers = 
+        headerParts 
+        |> Seq.skip 1 
+        |> Seq.map (fun s -> (s.Substring(0, s.IndexOf(": ")), s.Substring(s.IndexOf(": ") + 2)))
+        |> Map.ofSeq
     {
         method = method
         url = url
         http = http
         http10 = http10
+        headers = headers
     }
+
+    

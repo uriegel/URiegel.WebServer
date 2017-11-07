@@ -1,5 +1,4 @@
 module Request
-open RequestTypes
 open Header
 
 let request headerResult =
@@ -8,4 +7,7 @@ let request headerResult =
     printfn "%s" header.http
     printfn "%s" header.url
     printfn "%O" header.http10
+    printfn "%O" header.headers
+
+    printfn "%s" header.headers.["Connection"]
     

@@ -14,6 +14,5 @@ try
     stdin.ReadLine() |> ignore
     server.stop ()
 with
-    | ex -> printfn "Fehler: %s" ex.Message
-
+    | ex -> printfn "Fehler: %O" ex
 
