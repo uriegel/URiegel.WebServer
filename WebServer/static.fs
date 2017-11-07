@@ -51,11 +51,12 @@ let startSendNotFound () =
 let startSendFile file = 
     ()
 
-let startRedirectDirectory url configuration (host: string)= 
+let startRedirectDirectory header url configuration = 
+    let host = header.headers.TryFind "Host"
     let path = checkFile url configuration
     if path = "" then
         startSendNotFound ()
-    elif host <> "" then
+    elif host.IsSome && host.Value <> "" then
         let response = "<html><head>Moved permanently</head><body><h1>Moved permanently</h1>The specified resource moved permanently.</body</html>"
         let responseBytes = Encoding.UTF8.GetBytes response
         let redirectHeaders = 
@@ -63,11 +64,14 @@ let startRedirectDirectory url configuration (host: string)=
             "", "", "", responseBytes.Length
         ()
 
+// TODO: HTTPResponseString
+// TODO: UrlRoot = $"http{(string)(Server.Configuration.IsTlsEnabled ? "s" : null)}://{Headers.Host}";
+
 let serveStatic (header: Header) configuration = 
     let file = checkFile header.url configuration
     if file <> "" then  
         startSendFile file
     elif not (header.url.EndsWith "/") then
-        startRedirectDirectory (header.url + "/") configuration ""
+        startRedirectDirectory header (header.url + "/") configuration 
     else
         startSendNotFound ()
