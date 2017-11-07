@@ -1,13 +1,9 @@
 module Request
 open Header
+open Static
 
-let request headerResult =
+let request headerResult configuration =
     let header = initialize headerResult
-    printfn "%O" header.method
-    printfn "%s" header.http
-    printfn "%s" header.url
-    printfn "%O" header.http10
-    printfn "%O" header.headers
+    checkFile header configuration
 
-    printfn "%s" header.headers.["Connection"]
     

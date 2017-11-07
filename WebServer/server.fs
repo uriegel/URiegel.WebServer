@@ -18,11 +18,12 @@ open RequestSession
 type Server = {
     start: unit->unit
     stop: unit->unit
+    configuration: Configuration.Value
 }
 
-let private onConnected tcpClient = 
+let private onConnected tcpClient configuration = 
     try
-        create tcpClient |> ignore
+        create tcpClient configuration |> ignore
     with
     | :? SocketException as se when se.NativeErrorCode = 10054
         -> ()
@@ -31,23 +32,23 @@ let private onConnected tcpClient =
     | ex -> printfn "Error in asyncOnConnected occurred: %s" <| ex.ToString () 
 
 
-let rec beginConnect (listener: TcpListener) = 
+let rec beginConnect (listener: TcpListener) configuration = 
     listener.BeginAcceptTcpClient (fun a ->
         try
             let client = listener.EndAcceptTcpClient (a) 
-            onConnected client 
-            beginConnect listener
+            onConnected client configuration
+            beginConnect listener configuration
         with
         | :? SocketException as se when se.SocketErrorCode = SocketError.Interrupted 
             -> printfn "Stopping listening..."
         | ex -> printfn "Could not stop HTTP Listener: %s" <|ex.ToString () 
     , null) |> ignore
 
-let private start (listener: TcpListener) () = 
+let private start (listener: TcpListener, configuration: Configuration.Value) () = 
     try
         printfn "Starting HTTP Listener..."
         listener.Start ()
-        beginConnect listener
+        beginConnect listener configuration
         printfn "HTTP Listener started"
     with 
     | ex -> 
@@ -77,8 +78,9 @@ let create (configuration: Configuration.Value) =
 
     printfn "Server initialized"
     {
-        start = start listener
+        start = start (listener, configuration)
         stop = stop listener
+        configuration = configuration
     }
     
 
