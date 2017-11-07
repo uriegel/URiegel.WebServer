@@ -3,6 +3,7 @@ open Configuration
 open Header
 open System
 open System.IO
+open System.Text
 
 type QueryValues = {
     query: string
@@ -15,77 +16,58 @@ type StaticInfo = {
     isFile: bool
 }
 
-let checkFile (header: Header) configuration = 
-    let r = header.url.IndexOf '#'
+let private checkFile (url: string) (configuration: Value) = 
+    let r = url.IndexOf '#'
 
-    let url = 
+    let rawUrl = 
         if r <> -1 then 
-            header.url.Substring (0, r)
+            url.Substring (0, r)
         else
-            header.url
+            url
 
-    let qm = url.IndexOf ('?')
-    let queryValues = 
-        if qm <> -1 then
-            {
-                query = url.Substring (qm + 1)
-                url = url.Substring (0, qm)
-            }
-        else
-            {
-                query = ""
-                url = url
-            }
-        
-    let queryValues = {
-        queryValues with 
-            url =
-                let unescapedUrl = Uri.UnescapeDataString (queryValues.url)                         
-                if unescapedUrl.StartsWith "/" then
-                    unescapedUrl.Substring 1
-                else
-                    unescapedUrl
-    }        
+    let qm = rawUrl.IndexOf ('?')
+    let url = if qm <> -1 then rawUrl.Substring (0, qm) else rawUrl
 
-    let relativePath = queryValues.url.Replace ('/', Path.PathSeparator)
-    let rootDirectory = configuration.WebRoot
+    let isDirectory = url.EndsWith "/"
 
-    let localFile = 
-        try 
-            Path.Combine (rootDirectory, relativePath)
-        with
-            | ex -> 
-                printfn "%s Invalid path: %s %O" queryValues.url relativePath ex
-                raise ex
-
-    if File.Exists localFile then 
-        {
-            localFile = localFile
-            redirUrl = ""
-            isFile = true
-        }
-    elif Directory.Exists localFile then
-        if queryValues.url.EndsWith "/" then
-            {
-                localFile = ""
-                redirUrl = "kommt noch"
-                isFile = false
-            }
-        else
-            {
-                localFile = ""
-                redirUrl = "kommt noch"
-                isFile = false
-            }
-    //elif queryValues.url = "/" then
-    else
-    {
-        localFile = ""
-        redirUrl = ""
-        isFile = false
-    }
-
-
+    let unescapedUrl = Uri.UnescapeDataString url
     
+    let relativePath = 
+        let relativePath = if Path.DirectorySeparatorChar <> '/' then unescapedUrl.Replace ('/', Path.DirectorySeparatorChar) else unescapedUrl
+        relativePath.Substring 1
+    let path = Path.Combine (configuration.WebRoot, relativePath)
 
+    if File.Exists path then 
+        path
+    elif not isDirectory then
+        ""
+    else
+        let file = Path.Combine (path, "index.html")
+        if File.Exists file then file else ""
 
+let startSendNotFound () = 
+    ()
+
+let startSendFile file = 
+    ()
+
+let startRedirectDirectory url configuration (host: string)= 
+    let path = checkFile url configuration
+    if path = "" then
+        startSendNotFound ()
+    elif host <> "" then
+        let response = "<html><head>Moved permanently</head><body><h1>Moved permanently</h1>The specified resource moved permanently.</body</html>"
+        let responseBytes = Encoding.UTF8.GetBytes response
+        let redirectHeaders = 
+            sprintf "%s 301 Moved Permanently\r\nLocation: %s%s\r\nContent-Length: %d\r\n\r\n",
+            "", "", "", responseBytes.Length
+        ()
+
+let serveStatic (header: Header) configuration = 
+    let file = checkFile header.url configuration
+    if file <> "" then  
+        startSendFile file
+    elif not (header.url.EndsWith "/") then
+        startRedirectDirectory (header.url + "/") configuration ""
+    else
+        startSendNotFound ()
