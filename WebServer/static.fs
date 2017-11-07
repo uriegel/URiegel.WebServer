@@ -9,6 +9,12 @@ type QueryValues = {
     url: string
 }
 
+type StaticInfo = {
+    localFile: string
+    redirUrl: string
+    isFile: bool
+}
+
 let checkFile (header: Header) configuration = 
     let r = header.url.IndexOf '#'
 
@@ -52,7 +58,33 @@ let checkFile (header: Header) configuration =
                 printfn "%s Invalid path: %s %O" queryValues.url relativePath ex
                 raise ex
 
-    ()
+    if File.Exists localFile then 
+        {
+            localFile = localFile
+            redirUrl = ""
+            isFile = true
+        }
+    elif Directory.Exists localFile then
+        if queryValues.url.EndsWith "/" then
+            {
+                localFile = ""
+                redirUrl = "kommt noch"
+                isFile = false
+            }
+        else
+            {
+                localFile = ""
+                redirUrl = "kommt noch"
+                isFile = false
+            }
+    //elif queryValues.url = "/" then
+    else
+    {
+        localFile = ""
+        redirUrl = ""
+        isFile = false
+    }
+
 
     
 

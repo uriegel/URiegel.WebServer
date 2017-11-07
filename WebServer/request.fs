@@ -4,6 +4,8 @@ open Static
 
 let request headerResult configuration =
     let header = initialize headerResult
-    checkFile header configuration
+    let staticInfo = checkFile header configuration
+    ()
+
 
     
