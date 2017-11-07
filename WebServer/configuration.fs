@@ -19,7 +19,7 @@ let createEmpty () = {
     Port = 80
 }
 
-let create (configuration: Value) = {
+let create configuration = {
     configuration with 
         WebRoot = if configuration.WebRoot = "" then Directory.GetCurrentDirectory () else configuration.WebRoot
         SocketTimeout = if configuration.SocketTimeout = 0 then 20000 else configuration.SocketTimeout

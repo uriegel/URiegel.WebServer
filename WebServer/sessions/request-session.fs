@@ -7,13 +7,13 @@ open System.Net.Sockets
 open System.Security.Authentication
 open System.Text
 
-let private close (session: RequestSession) (fullClose: bool) =
+let private close session fullClose =
     if fullClose then
         session.networkStream.Close ()
     else
         session.tcpClient.Client.Shutdown (SocketShutdown.Send)
 
-let private checkHeaders (buffer: RequestTypes.Buffer) = 
+let private checkHeaders buffer = 
     let index = seq {0..buffer.currentIndex} |> Seq.tryFindIndex (fun i ->
         i > 4 && buffer.buffer.[i] = byte '\n' && buffer.buffer.[i - 1] = byte '\r' && buffer.buffer.[i - 2] = byte '\n')
 
@@ -29,7 +29,7 @@ let private checkHeaders (buffer: RequestTypes.Buffer) =
             buffer = buffer
         } 
 
-let rec private startReadBuffer (buffer: RequestTypes.Buffer) =
+let private startReadBuffer buffer action =
     buffer.session.networkStream.BeginRead (buffer.buffer, buffer.currentIndex, buffer.buffer.Length - buffer.currentIndex, fun a ->
         try 
             let read = buffer.session.networkStream.EndRead(a)
@@ -39,11 +39,7 @@ let rec private startReadBuffer (buffer: RequestTypes.Buffer) =
                         currentIndex = buffer.currentIndex + read
                         read = read
                 }
-                let result = checkHeaders buffer 
-                if result.header <> "" then
-                    request result
-                else
-                    startReadBuffer result.buffer |> ignore
+                action buffer
             else
                 ()
         with 
@@ -65,16 +61,21 @@ let rec private startReadBuffer (buffer: RequestTypes.Buffer) =
     , null)
 
 
-let rec private startReceive (session: RequestSession) =
+let private startReceive session =
     let buffer = {
         session = session
         buffer = Array.zeroCreate 20000
         currentIndex = 0
         read = 0
     } 
-    startReadBuffer buffer
+    startReadBuffer buffer <|fun buffer -> 
+        let result = checkHeaders buffer 
+        if result.header <> "" then
+            request result
+        else
+            startReadBuffer result.buffer |> ignore
 
-let create (tcpClient: TcpClient) =
+let create tcpClient =
     let session = {
         tcpClient = tcpClient
         networkStream = tcpClient.GetStream ()

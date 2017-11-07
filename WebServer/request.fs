@@ -1,5 +1,11 @@
 module Request
 open RequestTypes
-let request (headerResult: HeaderResult) =
-    printfn "%s" headerResult.header
+open Header
+
+let request headerResult =
+    let header = initialize headerResult
+    printfn "%O" header.method
+    printfn "%s" header.http
+    printfn "%s" header.url
+    printfn "%O" header.http10
     

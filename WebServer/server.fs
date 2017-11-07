@@ -20,7 +20,7 @@ type Server = {
     stop: unit->unit
 }
 
-let private onConnected (tcpClient: TcpClient) = 
+let private onConnected tcpClient = 
     try
         create tcpClient |> ignore
     with
@@ -28,7 +28,7 @@ let private onConnected (tcpClient: TcpClient) =
         -> ()
     | :? ObjectDisposedException 
         -> ()
-    | ex -> printfn "Error in asyncOnConnected occurred: %s" (ex.ToString ()) 
+    | ex -> printfn "Error in asyncOnConnected occurred: %s" <| ex.ToString () 
 
 
 let rec beginConnect (listener: TcpListener) = 
@@ -40,7 +40,7 @@ let rec beginConnect (listener: TcpListener) =
         with
         | :? SocketException as se when se.SocketErrorCode = SocketError.Interrupted 
             -> printfn "Stopping listening..."
-        | ex -> printfn "Could not stop HTTP Listener: %s" (ex.ToString ()) 
+        | ex -> printfn "Could not stop HTTP Listener: %s" <|ex.ToString () 
     , null) |> ignore
 
 let private start (listener: TcpListener) () = 
@@ -51,7 +51,7 @@ let private start (listener: TcpListener) () =
         printfn "HTTP Listener started"
     with 
     | ex -> 
-        printfn "Could not start HTTP Listener: %s" (ex.ToString ())
+        printfn "Could not start HTTP Listener: %s" <|ex.ToString ()
         raise ex
 
 let private stop (listener: TcpListener) () = 
@@ -60,14 +60,14 @@ let private stop (listener: TcpListener) () =
         listener.Stop ()
         printfn "HTTP Listener stopped"
     with 
-        | ex -> printfn "Could not stop HTTP Listener: %s" (ex.ToString ())
+        | ex -> printfn "Could not stop HTTP Listener: %s" <|ex.ToString ()
 
 let create (configuration: Configuration.Value) = 
     printfn "Initializing Server..."
     //ServicePointManager.SecurityProtocol = 10000 |> ignore
     printfn "Domain name: %s" configuration.DomainName
     if configuration.LocalAddress <> IPAddress.Any then 
-        printfn "Binding to local address: %s" (configuration.LocalAddress.ToString ())
+        printfn "Binding to local address: %s" <| configuration.LocalAddress.ToString ()
 
     printfn "Listening on port %d" configuration.Port
     let result = IPV6ListenerFactory.create configuration.Port
