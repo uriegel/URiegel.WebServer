@@ -1,6 +1,7 @@
 module Static
 open RequestData
 open ResponseData
+open Response
 open System
 open System.IO
 open System.Text
@@ -45,17 +46,26 @@ let private checkFile (url: string) (requestData: RequestData) =
         let file = Path.Combine (path, "index.html")
         if File.Exists file then file else ""
 
-let startSendNotFound () = 
-    ()
+let asyncSendNotFound responseData = async {
+    do! asyncSendError responseData @"<title>CAESAR</title>
+<Style> 
+html {
+    font-family: sans-serif;
+}
+h1 {
+    font-weight: 100;
+}
+</Style>" "<h1>Datei nicht gefunden</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden.</p>" 404 "Not Found"
+} 
 
-let startSendFile file = 
-    ()
+let asyncSendFile file responseData = async {
+    do! asyncSendNotFound responseData
+}
 
-
-let startRedirectDirectory url (responseData: ResponseData) = async {
+let asyncRedirectDirectory url (responseData: ResponseData) = async {
     let path = checkFile url responseData.requestData
     if path = "" then
-        startSendNotFound ()
+        do! asyncSendNotFound responseData
     elif responseData.requestData.header.host.Value <> "" then
         let response = "<html><head>Moved permanently</head><body><h1>Moved permanently</h1>The specified resource moved permanently.</body</html>"
         let responseBytes = Encoding.UTF8.GetBytes response
@@ -69,12 +79,12 @@ let startRedirectDirectory url (responseData: ResponseData) = async {
 }
 
 let serveStatic (requestData: RequestData) = async {
-    let resposenData = create requestData
+    let responseData = create requestData
     let file = checkFile requestData.header.url requestData
     if file <> "" then  
-        startSendFile file
+        do! asyncSendFile file responseData
     elif not (requestData.header.url.EndsWith "/") then
-        do! startRedirectDirectory (requestData.header.url + "/") resposenData 
+        do! asyncRedirectDirectory (requestData.header.url + "/") responseData 
     else
-        startSendNotFound ()
+        do! asyncSendNotFound responseData
 }
