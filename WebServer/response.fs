@@ -1,3 +1,2 @@
 module Response
 
-type ReposneData

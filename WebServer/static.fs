@@ -51,7 +51,8 @@ let startSendNotFound () =
 let startSendFile file = 
     ()
 
-let startRedirectDirectory url (responseData: ResponseData) = 
+
+let startRedirectDirectory url (responseData: ResponseData) = async {
     let path = checkFile url responseData.requestData
     if path = "" then
         startSendNotFound ()
@@ -60,17 +61,20 @@ let startRedirectDirectory url (responseData: ResponseData) =
         let responseBytes = Encoding.UTF8.GetBytes response
         let redirectHeaders = 
             sprintf "%s 301 Moved Permanently\r\nLocation: %s%s\r\nContent-Length: %d\r\n\r\n"
-                responseData.response.Value responseData.requestData.header.host.Value url responseBytes.Length
-        let affe = redirectHeaders
-        ()
+                responseData.response.Value responseData.requestData.urlRoot.Value url responseBytes.Length
+        let headerBytes = Encoding.UTF8.GetBytes redirectHeaders 
 
-let serveStatic (requestData: RequestData) = 
+        do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+        do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
+}
 
+let serveStatic (requestData: RequestData) = async {
     let resposenData = create requestData
     let file = checkFile requestData.header.url requestData
     if file <> "" then  
         startSendFile file
     elif not (requestData.header.url.EndsWith "/") then
-        startRedirectDirectory (requestData.header.url + "/") resposenData 
+        do! startRedirectDirectory (requestData.header.url + "/") resposenData 
     else
         startSendNotFound ()
+}

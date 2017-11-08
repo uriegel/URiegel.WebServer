@@ -62,7 +62,7 @@ let private startReadBuffer buffer action =
     , null)
 
 
-let private startReceive session configuration =
+let private startReceive (session, configuration) =
     let buffer = {
         session = session
         buffer = Array.zeroCreate 20000
@@ -75,10 +75,13 @@ let private startReceive session configuration =
             request result configuration session
         else
             startReadBuffer result.buffer |> ignore
+    
+    
 
 let create tcpClient configuration =
     let session = {
         tcpClient = tcpClient
         networkStream = tcpClient.GetStream ()
+        startReceive = startReceive
     }
-    startReceive session configuration
+    startReceive (session, configuration)
