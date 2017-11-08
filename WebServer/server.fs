@@ -4,7 +4,6 @@ open System.Net
 open System.Net.Sockets
 open RequestSession
 
-// TODO: Send Not found
 // TODO: TLS
 
 // TODO: async nur bis Daten da, keine Verschachtelten async-Blöcke in der SocketSession
