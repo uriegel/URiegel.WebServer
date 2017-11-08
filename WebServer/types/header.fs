@@ -8,13 +8,20 @@ type Method =
     | Head = 2
 
 
-type Header = {
-    method: Method
-    url: string
-    http: string
-    http10: bool
-    headers: Map<string,string>
-}
+type Header = 
+    {
+        method: Method
+        url: string
+        http: string
+        http10: bool
+        rawHeaders: Map<string,string>
+        host: Lazy<string>        
+    }
+    member this.Header(key: string) = 
+        let value = this.rawHeaders.TryFind key
+        match value with
+        | Some x -> x
+        | None -> ""
 
 let initialize headerResult = 
     let headerParts = headerResult.header.Split ([|"\r\n"|], StringSplitOptions.RemoveEmptyEntries)
@@ -46,7 +53,12 @@ let initialize headerResult =
         url = url
         http = http
         http10 = http10
-        headers = headers
+        rawHeaders = headers
+        host = Lazy<string>.Create <| fun () -> 
+            let value = headers.TryFind "Host"
+            match value with
+                | Some x -> x
+                | None -> ""
     }
 
     

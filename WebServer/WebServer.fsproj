@@ -9,6 +9,8 @@
     <Compile Include="ipv6-listener-factory.fs" />
     <Compile Include="types/request-types.fs" />
     <Compile Include="types/header.fs" />
+    <Compile Include="types/request-data.fs" />
+    <Compile Include="types/response-data.fs" />
     <Compile Include="static.fs" />
     <Compile Include="request.fs" />
     <Compile Include="sessions/request-session.fs" />

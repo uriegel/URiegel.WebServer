@@ -35,7 +35,7 @@ let private onConnected tcpClient configuration =
 let rec beginConnect (listener: TcpListener) configuration = 
     listener.BeginAcceptTcpClient (fun a ->
         try
-            let client = listener.EndAcceptTcpClient (a) 
+            let client = listener.EndAcceptTcpClient a 
             onConnected client configuration
             beginConnect listener configuration
         with

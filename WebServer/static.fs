@@ -1,6 +1,6 @@
 module Static
-open Configuration
-open Header
+open RequestData
+open ResponseData
 open System
 open System.IO
 open System.Text
@@ -16,7 +16,7 @@ type StaticInfo = {
     isFile: bool
 }
 
-let private checkFile (url: string) (configuration: Value) = 
+let private checkFile (url: string) (requestData: RequestData) = 
     let r = url.IndexOf '#'
 
     let rawUrl = 
@@ -35,7 +35,7 @@ let private checkFile (url: string) (configuration: Value) =
     let relativePath = 
         let relativePath = if Path.DirectorySeparatorChar <> '/' then unescapedUrl.Replace ('/', Path.DirectorySeparatorChar) else unescapedUrl
         relativePath.Substring 1
-    let path = Path.Combine (configuration.WebRoot, relativePath)
+    let path = Path.Combine (requestData.configuration.WebRoot, relativePath)
 
     if File.Exists path then 
         path
@@ -51,27 +51,26 @@ let startSendNotFound () =
 let startSendFile file = 
     ()
 
-let startRedirectDirectory header url configuration = 
-    let host = header.headers.TryFind "Host"
-    let path = checkFile url configuration
+let startRedirectDirectory url (responseData: ResponseData) = 
+    let path = checkFile url responseData.requestData
     if path = "" then
         startSendNotFound ()
-    elif host.IsSome && host.Value <> "" then
+    elif responseData.requestData.header.host.Value <> "" then
         let response = "<html><head>Moved permanently</head><body><h1>Moved permanently</h1>The specified resource moved permanently.</body</html>"
         let responseBytes = Encoding.UTF8.GetBytes response
         let redirectHeaders = 
-            sprintf "%s 301 Moved Permanently\r\nLocation: %s%s\r\nContent-Length: %d\r\n\r\n",
-            "", "", "", responseBytes.Length
+            sprintf "%s 301 Moved Permanently\r\nLocation: %s%s\r\nContent-Length: %d\r\n\r\n"
+                responseData.response.Value responseData.requestData.header.host.Value url responseBytes.Length
+        let affe = redirectHeaders
         ()
 
-// TODO: HTTPResponseString
-// TODO: UrlRoot = $"http{(string)(Server.Configuration.IsTlsEnabled ? "s" : null)}://{Headers.Host}";
+let serveStatic (requestData: RequestData) = 
 
-let serveStatic (header: Header) configuration = 
-    let file = checkFile header.url configuration
+    let resposenData = create requestData
+    let file = checkFile requestData.header.url requestData
     if file <> "" then  
         startSendFile file
-    elif not (header.url.EndsWith "/") then
-        startRedirectDirectory header (header.url + "/") configuration 
+    elif not (requestData.header.url.EndsWith "/") then
+        startRedirectDirectory (requestData.header.url + "/") resposenData 
     else
         startSendNotFound ()

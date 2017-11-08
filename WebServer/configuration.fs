@@ -9,6 +9,7 @@ type Value = {
     WebRoot: string
     SocketTimeout: int
     Port: int
+    IsTlsEnabled: bool
 }
 
 let createEmpty () = {
@@ -17,6 +18,7 @@ let createEmpty () = {
     WebRoot = ""
     SocketTimeout = 20000
     Port = 80
+    IsTlsEnabled = false
 }
 
 let create configuration = {

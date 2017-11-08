@@ -33,7 +33,7 @@ let private checkHeaders buffer =
 let private startReadBuffer buffer action =
     buffer.session.networkStream.BeginRead (buffer.buffer, buffer.currentIndex, buffer.buffer.Length - buffer.currentIndex, fun a ->
         try 
-            let read = buffer.session.networkStream.EndRead(a)
+            let read = buffer.session.networkStream.EndRead a
             if read <> 0 then
                 let buffer = {
                     buffer with
@@ -72,7 +72,7 @@ let private startReceive session configuration =
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
         if result.header <> "" then
-            request result configuration
+            request result configuration session
         else
             startReadBuffer result.buffer |> ignore
 
