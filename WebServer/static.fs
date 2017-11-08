@@ -1,4 +1,5 @@
 module Static
+open MimeTypes
 open RequestData
 open ResponseData
 open Response
@@ -58,8 +59,55 @@ h1 {
 </Style>" "<h1>Datei nicht gefunden</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden.</p>" 404 "Not Found"
 } 
 
-let asyncSendFile file responseData = async {
-    do! asyncSendNotFound responseData
+let asyncSendRange file responseData = async {
+    ()
+}
+
+let asyncSend304 () = async {
+    ()
+}
+
+let asyncInternalSendFile file (responseData: ResponseData) = async {
+    let fi = FileInfo file
+
+    let isModifiedSince = 
+        match responseData.requestData.header.Header "if-modified-since" with
+            | "" -> ""
+            | v -> 
+                let pos = v.IndexOf ";"
+                if pos <> -1 then v.Substring (0, pos) else v
+        
+    if isModifiedSince <> "" then
+        let ifModifiedSince = Convert.ToDateTime isModifiedSince
+        let fileTime = fi.LastWriteTime.AddTicks -(fi.LastWriteTime.Ticks % TimeSpan.FromSeconds(1.0).Ticks)
+        let diff = fileTime - ifModifiedSince
+        if diff <= TimeSpan.FromMilliseconds 0.0 then
+            do! asyncSend304 ()
+    
+    let contentType = 
+        match fi.Extension with
+        | ".html" 
+        | ".htm" -> "text/html; charset=UTF-8"
+        | ".css" -> "text/css; charset=UTF-8"
+        | ".js" -> "application/javascript; charset=UTF-8"
+        | ".appcache" -> "text/cache-manifest"
+        | _ ->  getMimeType fi.Extension
+   
+    let dateTime = fi.LastWriteTime
+    let lastModified = dateTime.ToUniversalTime().ToString "r"
+
+    let affe = lastModified
+    ()
+}
+
+let asyncSendFile (file: string) responseData = async {
+    if file.EndsWith (".mp4", StringComparison.InvariantCultureIgnoreCase)
+        || file.EndsWith (".mkv", StringComparison.InvariantCultureIgnoreCase)
+        || file.EndsWith (".mp3", StringComparison.InvariantCultureIgnoreCase)
+        || file.EndsWith (".wav", StringComparison.InvariantCultureIgnoreCase) then
+        do! asyncSendRange file responseData
+    else
+        do! asyncInternalSendFile file responseData
 }
 
 let asyncRedirectDirectory url (responseData: ResponseData) = async {

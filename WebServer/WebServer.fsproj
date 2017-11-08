@@ -6,6 +6,7 @@
   
   <ItemGroup>
     <Compile Include="configuration.fs" />
+    <Compile Include="mime-types.fs" />
     <Compile Include="ipv6-listener-factory.fs" />
     <Compile Include="types/request-types.fs" />
     <Compile Include="types/header.fs" />
