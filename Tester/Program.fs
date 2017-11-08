@@ -16,4 +16,4 @@ try
     server.stop ()
 with
     | ex -> printfn "Fehler: %O" ex
-exit 0
+
