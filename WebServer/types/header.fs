@@ -7,6 +7,10 @@ type Method =
     | Post = 1
     | Head = 2
 
+type ContentEncoding = 
+    None = 0
+    | Deflate = 1
+    | GZip = 2
 
 type Header = 
     {
@@ -15,7 +19,8 @@ type Header =
         http: string
         http10: bool
         rawHeaders: Map<string,string>
-        host: Lazy<string>        
+        host: Lazy<string>
+        contentEncoding: Lazy<ContentEncoding>
     }
     member this.Header(key: string) = 
         let value = this.rawHeaders.TryFind key
@@ -59,6 +64,12 @@ let initialize headerResult =
             match value with
                 | Some x -> x
                 | None -> ""
+        contentEncoding = Lazy<ContentEncoding>.Create <| fun () ->
+            let value = headers.TryFind "Accept-Encoding"
+            match value with
+                | Some acceptEncoding when acceptEncoding.Contains "deflate" -> ContentEncoding.Deflate
+                | Some acceptEncoding when acceptEncoding.Contains "gzip" -> ContentEncoding.GZip
+                | _ -> ContentEncoding.None
     }
 
     

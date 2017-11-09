@@ -63,12 +63,20 @@ let asyncSendRange file responseData = async {
     ()
 }
 
-let asyncSend304 () = async {
-    ()
+let asyncSend304 (responseData: ResponseData) = async {
+    let headerString = sprintf "%s 304 Not Modified\r\n\r\n" responseData.response.Value
+    let headerBytes = ASCIIEncoding.ASCII.GetBytes headerString
+    do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
 }
 
 let asyncInternalSendFile file (responseData: ResponseData) = async {
     let fi = FileInfo file
+
+    //let noCache = Server.Configuration.NoCacheFiles.Contains(file.ToLower());
+    let noCache = false
+    if not noCache then
+        // TODO: AppCache
+        ()
 
     let isModifiedSince = 
         match responseData.requestData.header.Header "if-modified-since" with
@@ -82,7 +90,7 @@ let asyncInternalSendFile file (responseData: ResponseData) = async {
         let fileTime = fi.LastWriteTime.AddTicks -(fi.LastWriteTime.Ticks % TimeSpan.FromSeconds(1.0).Ticks)
         let diff = fileTime - ifModifiedSince
         if diff <= TimeSpan.FromMilliseconds 0.0 then
-            do! asyncSend304 ()
+            do! asyncSend304 responseData
     
     let contentType = 
         match fi.Extension with
@@ -96,8 +104,8 @@ let asyncInternalSendFile file (responseData: ResponseData) = async {
     let dateTime = fi.LastWriteTime
     let lastModified = dateTime.ToUniversalTime().ToString "r"
 
-    let affe = lastModified
-    ()
+    use stream = File.OpenRead file
+    do! asyncSendStream responseData stream contentType lastModified
 }
 
 let asyncSendFile (file: string) responseData = async {

@@ -1,8 +1,12 @@
 module Response
 open ResponseData
+open ResponseHeaders
 open System
+open System.IO
 open System.Text
-
+open Header
+open System.IO.Compression
+open ResponseHeaders
 
 let createHeader responseData (header: Map<string,string>) status statusDescription = 
     let responseHeaders = 
@@ -28,6 +32,9 @@ let createHeader responseData (header: Map<string,string>) status statusDescript
         //         return result;
         //     }
 
+let createHeaderOk responseData header = 
+    createHeader responseData header 200 "OK"
+
 let asyncSendError (responseData: ResponseData) htmlHead htmlBody (status: int) (statusDescription: string) = async {
     let response = sprintf "<html><head>%s</head><body>%s</body></html>" htmlHead htmlBody
     let responseBytes = Encoding.UTF8.GetBytes response
@@ -41,3 +48,50 @@ let asyncSendError (responseData: ResponseData) htmlHead htmlBody (status: int) 
     do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
     do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
 } 
+
+let asyncSendStream (responseData: ResponseData) (stream: Stream) (contentType: string) (lastModified: string) = async {
+    
+    let mutable streamToSend = stream
+    if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None &&
+        (contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase)            
+        || contentType.StartsWith ("text/", StringComparison.CurrentCultureIgnoreCase)) then
+        
+        let mutable headers = Map.empty
+        use ms = new MemoryStream ()
+        use compressedStream = 
+            match responseData.requestData.header.contentEncoding.Value with    
+            | ContentEncoding.Deflate ->
+                headers <- headers.Add("Content-Encoding", "deflate") 
+                new DeflateStream (ms, CompressionMode.Compress, true) :> Stream
+            | ContentEncoding.GZip ->
+                headers <- headers.Add("Content-Encoding", "gzip")
+                new GZipStream (ms, CompressionMode.Compress, true) :> Stream
+            | _ -> null
+        do! stream.CopyToAsync compressedStream |> Async.AwaitTask
+        compressedStream.Close();
+        ms.Position = 0L |> ignore
+        
+        streamToSend <- ms
+
+        headers <- initialize headers contentType (int streamToSend.Length) lastModified false
+
+        if contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase) 
+            || contentType.StartsWith ("text/css", StringComparison.CurrentCultureIgnoreCase)
+            || contentType.StartsWith ("text/html", StringComparison.CurrentCultureIgnoreCase) then
+                headers <- headers.Add("Expires", DateTime.Now.ToUniversalTime().ToString "r")
+
+        let headerBytes = createHeaderOk responseData headers 
+        do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+        
+        if responseData.requestData.header.method <> Method.Head then
+            let bytes = Array.zeroCreate 8192
+
+            let mutable dataToSend = true
+            while dataToSend do 
+                let! read = streamToSend.AsyncRead (bytes, 0, bytes.Length)
+                if read <> 0 then
+                    do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, read)
+                else
+                    dataToSend <- false
+                
+}
