@@ -50,14 +50,13 @@ let asyncSendError (responseData: ResponseData) htmlHead htmlBody (status: int) 
 } 
 
 let asyncSendStream (responseData: ResponseData) (stream: Stream) (contentType: string) (lastModified: string) = async {
-    
+    let mutable headers = Map.empty
     let mutable streamToSend = stream
     if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None &&
         (contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase)            
         || contentType.StartsWith ("text/", StringComparison.CurrentCultureIgnoreCase)) then
         
-        let mutable headers = Map.empty
-        use ms = new MemoryStream ()
+        let ms = new MemoryStream ()
         use compressedStream = 
             match responseData.requestData.header.contentEncoding.Value with    
             | ContentEncoding.Deflate ->
@@ -73,25 +72,25 @@ let asyncSendStream (responseData: ResponseData) (stream: Stream) (contentType: 
         
         streamToSend <- ms
 
-        headers <- initialize headers contentType (int streamToSend.Length) lastModified false
+    headers <- initialize headers contentType (int streamToSend.Length) lastModified false
 
-        if contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase) 
-            || contentType.StartsWith ("text/css", StringComparison.CurrentCultureIgnoreCase)
-            || contentType.StartsWith ("text/html", StringComparison.CurrentCultureIgnoreCase) then
-                headers <- headers.Add("Expires", DateTime.Now.ToUniversalTime().ToString "r")
+    if contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase) 
+        || contentType.StartsWith ("text/css", StringComparison.CurrentCultureIgnoreCase)
+        || contentType.StartsWith ("text/html", StringComparison.CurrentCultureIgnoreCase) then
+            headers <- headers.Add("Expires", DateTime.Now.ToUniversalTime().ToString "r")
 
-        let headerBytes = createHeaderOk responseData headers 
-        do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
-        
-        if responseData.requestData.header.method <> Method.Head then
-            let bytes = Array.zeroCreate 8192
+    let headerBytes = createHeaderOk responseData headers 
+    do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+    
+    if responseData.requestData.header.method <> Method.Head then
+        let bytes = Array.zeroCreate 8192
 
-            let mutable dataToSend = true
-            while dataToSend do 
-                let! read = streamToSend.AsyncRead (bytes, 0, bytes.Length)
-                if read <> 0 then
-                    do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, read)
-                else
-                    dataToSend <- false
-                
+        let mutable dataToSend = true
+        while dataToSend do 
+            let! read = streamToSend.AsyncRead (bytes, 0, bytes.Length)
+            if read <> 0 then
+                do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, read)
+            else
+                dataToSend <- false
+            
 }

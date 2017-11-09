@@ -5,8 +5,8 @@ printfn "Starting Test Server"
 let configuration = Configuration.create {
         Configuration.createEmpty() with 
             Port = 20000; 
-            WebRoot = "/home/uwe/Projekte/Node/WebServerElectron/web" 
-            //WebRoot = @"D:\Projekte\WebServerSharp\web"
+            //WebRoot = "/home/uwe/Projekte/Node/WebServerElectron/web" 
+            WebRoot = @"C:\sourcen\Main\projects\Test\WebRTC"
     }
 
 try
