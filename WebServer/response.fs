@@ -69,7 +69,7 @@ let asyncSendStream (responseData: ResponseData) (stream: Stream) (contentType: 
             | _ -> null
         do! stream.CopyToAsync compressedStream |> Async.AwaitTask
         compressedStream.Close();
-        ms.Position = 0L |> ignore
+        ms.Position <- 0L 
         
         streamToSend <- ms
 

@@ -79,33 +79,38 @@ let asyncInternalSendFile file (responseData: ResponseData) = async {
         ()
 
     let isModifiedSince = 
-        match responseData.requestData.header.Header "if-modified-since" with
+        match responseData.requestData.header.Header "If-Modified-Since" with
             | "" -> ""
             | v -> 
                 let pos = v.IndexOf ";"
                 if pos <> -1 then v.Substring (0, pos) else v
         
-    if isModifiedSince <> "" then
-        let ifModifiedSince = Convert.ToDateTime isModifiedSince
-        let fileTime = fi.LastWriteTime.AddTicks -(fi.LastWriteTime.Ticks % TimeSpan.FromSeconds(1.0).Ticks)
-        let diff = fileTime - ifModifiedSince
-        if diff <= TimeSpan.FromMilliseconds 0.0 then
-            do! asyncSend304 responseData
-    
-    let contentType = 
-        match fi.Extension with
-        | ".html" 
-        | ".htm" -> "text/html; charset=UTF-8"
-        | ".css" -> "text/css; charset=UTF-8"
-        | ".js" -> "application/javascript; charset=UTF-8"
-        | ".appcache" -> "text/cache-manifest"
-        | _ ->  getMimeType fi.Extension
-   
-    let dateTime = fi.LastWriteTime
-    let lastModified = dateTime.ToUniversalTime().ToString "r"
+    let modified =  
+        if isModifiedSince <> "" then
+            let ifModifiedSince = Convert.ToDateTime isModifiedSince
+            let fileTime = fi.LastWriteTime.AddTicks -(fi.LastWriteTime.Ticks % TimeSpan.FromSeconds(1.0).Ticks)
+            let diff = fileTime - ifModifiedSince
+            diff > TimeSpan.FromMilliseconds 0.0
+        else
+            true
 
-    use stream = File.OpenRead file
-    do! asyncSendStream responseData stream contentType lastModified
+    if modified then
+        let contentType = 
+            match fi.Extension with
+            | ".html" 
+            | ".htm" -> "text/html; charset=UTF-8"
+            | ".css" -> "text/css; charset=UTF-8"
+            | ".js" -> "application/javascript; charset=UTF-8"
+            | ".appcache" -> "text/cache-manifest"
+            | _ ->  getMimeType fi.Extension
+       
+        let dateTime = fi.LastWriteTime
+        let lastModified = dateTime.ToUniversalTime().ToString "r"
+
+        use stream = File.OpenRead file
+        do! asyncSendStream responseData stream contentType lastModified
+    else
+        do! asyncSend304 responseData
 }
 
 let asyncSendFile (file: string) responseData = async {
