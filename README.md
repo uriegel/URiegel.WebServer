@@ -11,3 +11,6 @@ restart vscode
 restart vscode
 dotnet add Tester/Tester.fsproj reference WebServer/WebServer.fsproj
 
+publish: 
+dotnet build --framework netcoreapp2.0 -c release
+dotnet publish --framework netcoreapp2.0 -c release (dotnet publish --framework netcoreapp2.0 --self-contained)
