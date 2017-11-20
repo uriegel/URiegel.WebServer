@@ -1,12 +1,20 @@
 ﻿open Configuration
 open Server
+open Request
 
 printfn "Starting Test Server"
+
+let request (url: string) = 
+    if url.StartsWith("/affe") then 
+        printfn "Die Urle: %s" url
+        true
+    else
+        false
 let configuration = Configuration.create {
         Configuration.createEmpty() with 
             Port = 20000; 
-            WebRoot = "/home/uwe/Projekte/Commander/" 
-            //WebRoot = @"C:\sourcen\Main\projects\Test\WebRTC"
+            WebRoot = "/home/uwe/Projekte/Node/WebServerElectron/web/" 
+            request = request
     }
 
 try
