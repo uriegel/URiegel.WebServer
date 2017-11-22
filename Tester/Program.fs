@@ -1,24 +1,37 @@
 ﻿open Configuration
-open Server
-open Request
+open ResponseData
 
 printfn "Starting Test Server"
 
-let request (url: string) = 
-    if url.StartsWith("/affe") then 
-        printfn "Die Urle: %s" url
-        true
-    else
-        false
+let request (url: string) (responseData: ResponseData) = 
+    async {
+        if url.StartsWith("/affe") then 
+            printfn "Die Urle: %s" url
+
+            do! Response.asyncSendError responseData @"<title>CAESAR</title>
+<Style> 
+html {
+    font-family: sans-serif;
+}
+h1 {
+    font-weight: 100;
+}
+</Style>"           "<h1>Datei nicht gefunden</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden.</p>" 404 "Not Found" 
+
+            return true
+        else 
+            return false
+}
+
 let configuration = Configuration.create {
         Configuration.createEmpty() with 
             Port = 20000; 
             WebRoot = "/home/uwe/Projekte/Node/WebServerElectron/web/" 
-            request = request
     }
-
+    
 try
-    let server = create configuration
+    let server = Server.create configuration
+    server.registerRequests request
     server.start ()
     stdin.ReadLine() |> ignore
     server.stop ()

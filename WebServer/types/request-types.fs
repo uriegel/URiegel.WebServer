@@ -6,7 +6,7 @@ open System
 type RequestSession = {
     tcpClient: TcpClient
     networkStream: Stream
-    startReceive: (RequestSession * Configuration.Value) -> IAsyncResult
+    startReceive: RequestSession->Configuration.Value->IAsyncResult
 }
 
 type Buffer = {

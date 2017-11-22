@@ -1,16 +1,19 @@
 module Request
 open Header
 open RequestData
+open ResponseData
 open Static
 
-let request headerResult configuration requestSession =
+let request headerResult configuration requestSession (checkRequest: (string->ResponseData->Async<bool>)) =
     let header = initialize headerResult
-    let requestData = create configuration header requestSession
+    let requestData = RequestData.create configuration header requestSession
+    let responseData = create requestData
     
     async {
-        if not (configuration.request header.url) then
+        let! processed = checkRequest header.url responseData
+        if not processed then
             do! serveStatic requestData
-        requestSession.startReceive (requestSession, configuration) |> ignore
+        requestSession.startReceive requestSession configuration |> ignore
     } |> Async.StartImmediate
 
 

@@ -1,7 +1,6 @@
 module RequestSession
 open RequestTypes
 open Request
-open Configuration
 open System
 open System.IO
 open System.Net.Sockets
@@ -62,7 +61,7 @@ let private startReadBuffer buffer action =
     , null)
 
 
-let private startReceive (session, configuration) =
+let private startReceive (checkRequest: (string->ResponseData.ResponseData->Async<bool>)) session configuration  =
     let buffer = {
         session = session
         buffer = Array.zeroCreate 20000
@@ -72,16 +71,16 @@ let private startReceive (session, configuration) =
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
         if result.header <> "" then
-            request result configuration session
+            request result configuration session checkRequest
         else
             startReadBuffer result.buffer |> ignore
     
     
 
-let create tcpClient configuration =
+let create tcpClient configuration checkRequest =
     let session = {
         tcpClient = tcpClient
         networkStream = tcpClient.GetStream ()
-        startReceive = startReceive
+        startReceive = startReceive checkRequest
     }
-    startReceive (session, configuration)
+    startReceive checkRequest session configuration 

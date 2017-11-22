@@ -10,7 +10,6 @@ type Value = {
     SocketTimeout: int
     Port: int
     IsTlsEnabled: bool 
-    request: string->bool
 }
 
 let createEmpty () = {
@@ -20,7 +19,6 @@ let createEmpty () = {
     SocketTimeout = 20000
     Port = 80
     IsTlsEnabled = false
-    request = fun _ -> false
 }
 
 let create configuration = {

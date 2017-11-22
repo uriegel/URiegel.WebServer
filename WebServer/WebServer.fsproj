@@ -1,9 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
-  
   <ItemGroup>
     <Compile Include="configuration.fs" />
     <Compile Include="mime-types.fs" />
@@ -19,5 +17,4 @@
     <Compile Include="sessions/request-session.fs" />
     <Compile Include="server.fs" />
   </ItemGroup>
-
 </Project>

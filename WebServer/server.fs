@@ -2,7 +2,7 @@ module Server
 open System
 open System.Net
 open System.Net.Sockets
-open RequestSession
+open ResponseData
 
 // TODO: TLS
 
@@ -12,12 +12,15 @@ open RequestSession
 type Server = {
     start: unit->unit
     stop: unit->unit
+    registerRequests: (string->ResponseData->Async<bool>)->unit
     configuration: Configuration.Value
 }
 
+let mutable private request = fun _ _ -> async{ return false }
+
 let private onConnected tcpClient configuration = 
     try
-        create tcpClient configuration |> ignore
+        RequestSession.create tcpClient configuration request |> ignore
     with
     | :? SocketException as se when se.NativeErrorCode = 10054
         -> ()
@@ -59,6 +62,9 @@ let private stop (listener: TcpListener) () =
     with 
         | ex -> printfn "Could not stop HTTP Listener: %s" <|ex.ToString ()
 
+let private registerRequests (requestToSet: string->ResponseData->Async<bool>) =
+    request <- requestToSet
+
 let create (configuration: Configuration.Value) = 
     printfn "Initializing Server..."
     //ServicePointManager.SecurityProtocol = 10000 |> ignore
@@ -76,6 +82,7 @@ let create (configuration: Configuration.Value) =
     {
         start = start (listener, configuration)
         stop = stop listener
+        registerRequests = registerRequests
         configuration = configuration
     }
     

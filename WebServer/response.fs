@@ -8,6 +8,10 @@ open Header
 open System.IO.Compression
 open ResponseHeaders
 
+type ResponseInteface = {
+    sendText: ResponseData -> Async<unit>
+}
+
 let createHeader responseData (header: Map<string,string>) status statusDescription = 
     let responseHeaders = 
         if not <| header.ContainsKey "Content-Length" then
@@ -92,5 +96,20 @@ let asyncSendStream (responseData: ResponseData) (stream: Stream) (contentType: 
                 do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, read)
             else
                 dataToSend <- false
-            
+}
+
+let asyncSendText responseData = async {
+    do! asyncSendError responseData @"<title>CAESAR</title>
+<Style> 
+html {
+    font-family: sans-serif;
+}
+h1 {
+    font-weight: 100;
+}
+</Style>" "<h1>Datei nicht gefunden</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden.</p>" 404 "Not Found"
+} 
+
+let getResponseInterface = {
+    sendText = asyncSendText
 }
