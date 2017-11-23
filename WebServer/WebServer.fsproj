@@ -3,6 +3,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="json.fs" />
     <Compile Include="configuration.fs" />
     <Compile Include="mime-types.fs" />
     <Compile Include="ipv6-listener-factory.fs" />

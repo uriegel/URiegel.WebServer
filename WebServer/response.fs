@@ -7,6 +7,7 @@ open System.Text
 open Header
 open System.IO.Compression
 open ResponseHeaders
+open Json
 
 type ResponseInteface = {
     sendText: ResponseData -> Async<unit>
@@ -39,6 +40,9 @@ let createHeader responseData (header: Map<string,string>) status statusDescript
 let createHeaderOk responseData header = 
     createHeader responseData header 200 "OK"
 
+let asyncSendJson(json: Object) = async {
+    let affe = serializeJson json
+}
 let asyncSendError (responseData: ResponseData) htmlHead htmlBody (status: int) (statusDescription: string) = async {
     let response = sprintf "<html><head>%s</head><body>%s</body></html>" htmlHead htmlBody
     let responseBytes = Encoding.UTF8.GetBytes response
