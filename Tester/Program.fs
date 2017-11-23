@@ -1,22 +1,25 @@
-﻿open Configuration
+﻿open System.Runtime.Serialization
+open Configuration
+
+[<DataContract>]
+type Command = {
+    [<DataMember>]
+    mutable cmd: string
+
+    [<DataMember>]
+    mutable requestId: string
+}
 
 printfn "Starting Test Server"
 
 let request (url: string) responseData = 
     async {
         if url.StartsWith("/affe") then 
-            printfn "Die Urle: %s" url
-
-            do! Response.asyncSendError responseData @"<title>CAESAR</title>
-<Style> 
-html {
-    font-family: sans-serif;
-}
-h1 {
-    font-weight: 100;
-}
-</Style>"           "<h1>Datei nicht gefunden, weil nicht da</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden, da sie nicht gesucht wurde.</p>" 404 "Not Found" 
-
+            let command = {
+                cmd = "Kommando"
+                requestId = "RekwestEidie"
+            }
+            do! Response.asyncSendJson responseData command
             return true
         else 
             return false

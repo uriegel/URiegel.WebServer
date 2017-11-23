@@ -6,11 +6,7 @@ open System.Text
 open Header
 open System.IO.Compression
 open ResponseHeaders
-open Json
-
-type ResponseInteface = {
-    sendText: ResponseData -> Async<unit>
-}
+open System.Runtime.Serialization.Json
 
 let createHeader responseData (header: Map<string,string>) status statusDescription = 
     let responseHeaders = 
@@ -26,23 +22,11 @@ let createHeader responseData (header: Map<string,string>) status statusDescript
     let headerLines = responseHeaders |> Seq.map (fun n -> sprintf "%s: %s" n.Key n.Value)
     let headerString = sprintf "%s %d %s\r\n%s\r\n\r\n" responseData.response.Value status statusDescription <| String.Join ("\r\n", headerLines) 
 
-    // if (payload == null)
     ASCIIEncoding.ASCII.GetBytes(headerString);
-        //     else
-        //     {
-        //         var result = new byte[ASCIIEncoding.ASCII.GetByteCount(headerString) + payload.Length];
-        //         var headerBytes = ASCIIEncoding.ASCII.GetBytes(headerString, 0, headerString.Length, result, 0);
-        //         Array.Copy(payload, 0, result, headerBytes, payload.Length);
-        //         return result;
-        //     }
-
+    
 let createHeaderOk responseData header = 
     createHeader responseData header 200 "OK"
 
-let asyncSendJson json = async {
-    let affe = serializeJson json
-    ()
-}
 let asyncSendError responseData htmlHead htmlBody status statusDescription = async {
     let response = sprintf "<html><head>%s</head><body>%s</body></html>" htmlHead htmlBody
     let responseBytes = Encoding.UTF8.GetBytes response
@@ -56,6 +40,39 @@ let asyncSendError responseData htmlHead htmlBody status statusDescription = asy
     do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
     do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
 } 
+
+let private asyncSendJsonBytes responseData (bytes: byte[]) = async {
+    let mutable contentLength = bytes.Length
+    let headers = Map.empty.
+                    Add("Content-Length", contentLength.ToString ()).
+                    Add("Content-Type", "application/json; charset=UTF-8").
+                    Add("Cache-Control", "no-cache,no-store")
+    let headers =
+        match responseData.requestData.header.contentEncoding.Value with
+        | ContentEncoding.Deflate -> headers.Add("Content-Encoding", "deflate")
+        | ContentEncoding.GZip -> headers.Add("Content-Encoding", "gzip")
+        | _ -> headers    
+
+    let headerBytes = createHeaderOk responseData headers 
+    do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+    do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length) 
+}
+
+let asyncSendJson responseData json = async {
+    let jason = DataContractJsonSerializer (json.GetType())
+    use memStm = new MemoryStream ()
+    let streamToDeserialize = 
+        match responseData.requestData.header.contentEncoding.Value with
+        | ContentEncoding.Deflate -> new DeflateStream (memStm, CompressionMode.Compress, true) :> Stream
+        | ContentEncoding.GZip -> new GZipStream (memStm, CompressionMode.Compress, true) :> Stream
+        | _ -> memStm :> Stream
+    jason.WriteObject (streamToDeserialize, json)
+    if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None then 
+        streamToDeserialize.Close ()
+
+    memStm.Capacity <- int memStm.Length
+    do! asyncSendJsonBytes responseData <| memStm.GetBuffer ()
+}
 
 let asyncSendStream responseData (stream: Stream) (contentType: string) lastModified = async {
     let mutable headers = Map.empty
@@ -113,7 +130,3 @@ h1 {
 }
 </Style>" "<h1>Datei nicht gefunden</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden.</p>" 404 "Not Found"
 } 
-
-let getResponseInterface = {
-    sendText = asyncSendText
-}
