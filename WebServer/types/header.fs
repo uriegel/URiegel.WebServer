@@ -22,7 +22,7 @@ type Header =
         host: Lazy<string>
         contentEncoding: Lazy<ContentEncoding>
     }
-    member this.Header(key: string) = 
+    member this.Header key = 
         let value = this.rawHeaders.TryFind key
         match value with
         | Some x -> x

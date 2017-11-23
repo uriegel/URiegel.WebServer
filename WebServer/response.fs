@@ -1,6 +1,5 @@
 module Response
 open ResponseData
-open ResponseHeaders
 open System
 open System.IO
 open System.Text
@@ -40,10 +39,11 @@ let createHeader responseData (header: Map<string,string>) status statusDescript
 let createHeaderOk responseData header = 
     createHeader responseData header 200 "OK"
 
-let asyncSendJson(json: Object) = async {
+let asyncSendJson json = async {
     let affe = serializeJson json
+    ()
 }
-let asyncSendError (responseData: ResponseData) htmlHead htmlBody (status: int) (statusDescription: string) = async {
+let asyncSendError responseData htmlHead htmlBody status statusDescription = async {
     let response = sprintf "<html><head>%s</head><body>%s</body></html>" htmlHead htmlBody
     let responseBytes = Encoding.UTF8.GetBytes response
    
@@ -57,7 +57,7 @@ let asyncSendError (responseData: ResponseData) htmlHead htmlBody (status: int) 
     do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
 } 
 
-let asyncSendStream (responseData: ResponseData) (stream: Stream) (contentType: string) (lastModified: string) = async {
+let asyncSendStream responseData (stream: Stream) (contentType: string) lastModified = async {
     let mutable headers = Map.empty
     let mutable streamToSend = stream
     if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None &&

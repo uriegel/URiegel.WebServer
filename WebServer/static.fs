@@ -18,7 +18,7 @@ type StaticInfo = {
     isFile: bool
 }
 
-let private checkFile (url: string) (requestData: RequestData) = 
+let private checkFile (url: string) requestData = 
     let r = url.IndexOf '#'
 
     let rawUrl = 
@@ -63,13 +63,13 @@ let asyncSendRange file responseData = async {
     ()
 }
 
-let asyncSend304 (responseData: ResponseData) = async {
+let asyncSend304 responseData = async {
     let headerString = sprintf "%s 304 Not Modified\r\n\r\n" responseData.response.Value
     let headerBytes = ASCIIEncoding.ASCII.GetBytes headerString
     do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
 }
 
-let asyncInternalSendFile file (responseData: ResponseData) = async {
+let asyncInternalSendFile file responseData = async {
     let fi = FileInfo file
 
     //let noCache = Server.Configuration.NoCacheFiles.Contains(file.ToLower());
@@ -123,7 +123,7 @@ let asyncSendFile (file: string) responseData = async {
         do! asyncInternalSendFile file responseData
 }
 
-let asyncRedirectDirectory url (responseData: ResponseData) = async {
+let asyncRedirectDirectory url responseData = async {
     let path = checkFile url responseData.requestData
     if path = "" then
         do! asyncSendNotFound responseData
@@ -139,7 +139,7 @@ let asyncRedirectDirectory url (responseData: ResponseData) = async {
         do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
 }
 
-let serveStatic (requestData: RequestData) = async {
+let serveStatic requestData = async {
     let responseData = create requestData
     let file = checkFile requestData.header.url requestData
     if file <> "" then  

@@ -565,7 +565,7 @@ let private mappings2 = Map [".mp2v", "video/mpeg";
     ".zip", "application/x-zip-compressed";
 ]
 
-let private join (p:Map<'a,'b>) (q:Map<'a,'b>) = Map(Seq.concat [ (Map.toSeq p) ; (Map.toSeq q) ])
+let private join p q = Map(Seq.concat [ (Map.toSeq p) ; (Map.toSeq q) ])
 
 let private mappings = join mappings1 mappings2
 

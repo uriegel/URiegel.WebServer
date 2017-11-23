@@ -1,9 +1,8 @@
 ﻿open Configuration
-open ResponseData
 
 printfn "Starting Test Server"
 
-let request (url: string) (responseData: ResponseData) = 
+let request (url: string) responseData = 
     async {
         if url.StartsWith("/affe") then 
             printfn "Die Urle: %s" url
@@ -16,7 +15,7 @@ html {
 h1 {
     font-weight: 100;
 }
-</Style>"           "<h1>Datei nicht gefunden</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden.</p>" 404 "Not Found" 
+</Style>"           "<h1>Datei nicht gefunden, weil nicht da</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden, da sie nicht gesucht wurde.</p>" 404 "Not Found" 
 
             return true
         else 
@@ -26,7 +25,8 @@ h1 {
 let configuration = Configuration.create {
         Configuration.createEmpty() with 
             Port = 20000; 
-            WebRoot = "/home/uwe/Projekte/Node/WebServerElectron/web/" 
+            //WebRoot = "/home/uwe/Projekte/Node/WebServerElectron/web/" 
+            WebRoot = "D:\Projekte\WebServerSharp\web" 
     }
     
 try

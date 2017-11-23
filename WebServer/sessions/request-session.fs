@@ -61,7 +61,7 @@ let private startReadBuffer buffer action =
     , null)
 
 
-let private startReceive (checkRequest: (string->ResponseData.ResponseData->Async<bool>)) session configuration  =
+let private startReceive checkRequest session configuration  =
     let buffer = {
         session = session
         buffer = Array.zeroCreate 20000

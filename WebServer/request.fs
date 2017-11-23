@@ -1,10 +1,9 @@
 module Request
 open Header
-open RequestData
 open ResponseData
 open Static
 
-let request headerResult configuration requestSession (checkRequest: (string->ResponseData->Async<bool>)) =
+let request headerResult configuration requestSession checkRequest =
     let header = initialize headerResult
     let requestData = RequestData.create configuration header requestSession
     let responseData = create requestData
