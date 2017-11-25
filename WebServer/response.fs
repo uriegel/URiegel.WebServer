@@ -8,7 +8,7 @@ open System.IO.Compression
 open ResponseHeaders
 open System.Runtime.Serialization.Json
 
-let createHeader responseData (header: Map<string,string>) status statusDescription = 
+let createHeader responseData (header: Map<string,string>) status statusDescription (payload: byte[] option) = 
     let responseHeaders = 
         if not <| header.ContainsKey "Content-Length" then
             header.Add("Connection", "close").
@@ -22,10 +22,16 @@ let createHeader responseData (header: Map<string,string>) status statusDescript
     let headerLines = responseHeaders |> Seq.map (fun n -> sprintf "%s: %s" n.Key n.Value)
     let headerString = sprintf "%s %d %s\r\n%s\r\n\r\n" responseData.response.Value status statusDescription <| String.Join ("\r\n", headerLines) 
 
-    ASCIIEncoding.ASCII.GetBytes(headerString);
-    
-let createHeaderOk responseData header = 
-    createHeader responseData header 200 "OK"
+    if payload.IsNone then
+        ASCIIEncoding.ASCII.GetBytes(headerString)
+    else 
+        let result = Array.zeroCreate (ASCIIEncoding.ASCII.GetByteCount headerString + payload.Value.Length)
+        let headerBytes = ASCIIEncoding.ASCII.GetBytes (headerString, 0, headerString.Length, result, 0)
+        Array.Copy (payload.Value, 0, result, headerBytes, payload.Value.Length)
+        result
+
+let createHeaderOk responseData header payload = 
+    createHeader responseData header 200 "OK" payload
 
 let asyncSendError responseData htmlHead htmlBody status statusDescription = async {
     let response = sprintf "<html><head>%s</head><body>%s</body></html>" htmlHead htmlBody
@@ -35,10 +41,8 @@ let asyncSendError responseData htmlHead htmlBody status statusDescription = asy
                     Add("Content-Length", responseBytes.Length.ToString ()).
                     Add("Content-Type", "text/html; charset = UTF-8")
 
-    let headerBytes = createHeader responseData headers status statusDescription                     
-
-    do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
-    do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
+    let bytes = createHeader responseData headers status statusDescription (Some responseBytes)
+    do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length)
 } 
 
 let private asyncSendJsonBytes responseData (bytes: byte[]) = async {
@@ -53,8 +57,7 @@ let private asyncSendJsonBytes responseData (bytes: byte[]) = async {
         | ContentEncoding.GZip -> headers.Add("Content-Encoding", "gzip")
         | _ -> headers    
 
-    let headerBytes = createHeaderOk responseData headers 
-    do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+    let bytes = createHeaderOk responseData headers (Some bytes)
     do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length) 
 }
 
@@ -106,7 +109,7 @@ let asyncSendStream responseData (stream: Stream) (contentType: string) lastModi
             || contentType.StartsWith ("text/html", StringComparison.CurrentCultureIgnoreCase) then
                 headers <- headers.Add("Expires", DateTime.Now.ToUniversalTime().ToString "r")
 
-        let headerBytes = createHeaderOk responseData headers 
+        let headerBytes = createHeaderOk responseData headers None
         do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
         
         if responseData.requestData.header.method <> Method.Head then
