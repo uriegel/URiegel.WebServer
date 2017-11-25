@@ -33,49 +33,52 @@ let createHeader responseData (header: Map<string,string>) status statusDescript
 let createHeaderOk responseData header payload = 
     createHeader responseData header 200 "OK" payload
 
-let asyncSendError responseData htmlHead htmlBody status statusDescription = async {
-    let response = sprintf "<html><head>%s</head><body>%s</body></html>" htmlHead htmlBody
-    let responseBytes = Encoding.UTF8.GetBytes response
-   
-    let headers = Map.empty.
-                    Add("Content-Length", responseBytes.Length.ToString ()).
-                    Add("Content-Type", "text/html; charset = UTF-8")
+let asyncSendError responseData htmlHead htmlBody status statusDescription = 
+    async {
+        let response = sprintf "<html><head>%s</head><body>%s</body></html>" htmlHead htmlBody
+        let responseBytes = Encoding.UTF8.GetBytes response
+       
+        let headers = Map.empty.
+                        Add("Content-Length", responseBytes.Length.ToString ()).
+                        Add("Content-Type", "text/html; charset = UTF-8")
 
-    let bytes = createHeader responseData headers status statusDescription (Some responseBytes)
-    do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length)
-} 
+        let bytes = createHeader responseData headers status statusDescription (Some responseBytes)
+        do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length)
+    } 
 
-let private asyncSendJsonBytes responseData (bytes: byte[]) = async {
-    let mutable contentLength = bytes.Length
-    let headers = Map.empty.
-                    Add("Content-Length", contentLength.ToString ()).
-                    Add("Content-Type", "application/json; charset=UTF-8").
-                    Add("Cache-Control", "no-cache,no-store")
-    let headers =
-        match responseData.requestData.header.contentEncoding.Value with
-        | ContentEncoding.Deflate -> headers.Add("Content-Encoding", "deflate")
-        | ContentEncoding.GZip -> headers.Add("Content-Encoding", "gzip")
-        | _ -> headers    
+let private asyncSendJsonBytes responseData (bytes: byte[]) = 
+    async {
+        let mutable contentLength = bytes.Length
+        let headers = Map.empty.
+                        Add("Content-Length", contentLength.ToString ()).
+                        Add("Content-Type", "application/json; charset=UTF-8").
+                        Add("Cache-Control", "no-cache,no-store")
+        let headers =
+            match responseData.requestData.header.contentEncoding.Value with
+            | ContentEncoding.Deflate -> headers.Add("Content-Encoding", "deflate")
+            | ContentEncoding.GZip -> headers.Add("Content-Encoding", "gzip")
+            | _ -> headers    
 
-    let bytes = createHeaderOk responseData headers (Some bytes)
-    do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length) 
-}
+        let bytes = createHeaderOk responseData headers (Some bytes)
+        do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length) 
+    }
 
-let asyncSendJson responseData json = async {
-    let jason = DataContractJsonSerializer (json.GetType())
-    use memStm = new MemoryStream ()
-    let streamToDeserialize = 
-        match responseData.requestData.header.contentEncoding.Value with
-        | ContentEncoding.Deflate -> new DeflateStream (memStm, CompressionMode.Compress, true) :> Stream
-        | ContentEncoding.GZip -> new GZipStream (memStm, CompressionMode.Compress, true) :> Stream
-        | _ -> memStm :> Stream
-    jason.WriteObject (streamToDeserialize, json)
-    if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None then 
-        streamToDeserialize.Close ()
+let asyncSendJson responseData json = 
+    async {
+        let jason = DataContractJsonSerializer (json.GetType())
+        use memStm = new MemoryStream ()
+        let streamToDeserialize = 
+            match responseData.requestData.header.contentEncoding.Value with
+            | ContentEncoding.Deflate -> new DeflateStream (memStm, CompressionMode.Compress, true) :> Stream
+            | ContentEncoding.GZip -> new GZipStream (memStm, CompressionMode.Compress, true) :> Stream
+            | _ -> memStm :> Stream
+        jason.WriteObject (streamToDeserialize, json)
+        if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None then 
+            streamToDeserialize.Close ()
 
-    memStm.Capacity <- int memStm.Length
-    do! asyncSendJsonBytes responseData <| memStm.GetBuffer ()
-}
+        memStm.Capacity <- int memStm.Length
+        do! asyncSendJsonBytes responseData <| memStm.GetBuffer ()
+    }
 
 let asyncSendStream responseData (stream: Stream) (contentType: string) lastModified = 
     async {
