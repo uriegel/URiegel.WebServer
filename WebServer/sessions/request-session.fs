@@ -30,9 +30,9 @@ let private checkHeaders buffer =
         } 
 
 let private startReadBuffer buffer action =
-    buffer.session.networkStream.BeginRead (buffer.buffer, buffer.currentIndex, buffer.buffer.Length - buffer.currentIndex, fun a ->
+    async {
         try 
-            let read = buffer.session.networkStream.EndRead a
+            let! read = buffer.session.networkStream.AsyncRead (buffer.buffer, buffer.currentIndex, buffer.buffer.Length - buffer.currentIndex)
             if read <> 0 then
                 let buffer = {
                     buffer with
@@ -58,10 +58,9 @@ let private startReadBuffer buffer action =
             | ex -> 
                 printfn "Socket session closed, an error has occurred while receiving: %s" (ex.ToString ())
                 close buffer.session true
-    , null)
+    } |> Async.StartImmediate
 
-
-let private startReceive checkRequest session configuration  =
+let private startReceive asyncCheckRequest session configuration  =
     let buffer = {
         session = session
         buffer = Array.zeroCreate 20000
@@ -71,16 +70,14 @@ let private startReceive checkRequest session configuration  =
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
         if result.header <> "" then
-            request result configuration session checkRequest
+            startRequesting result configuration session asyncCheckRequest
         else
             startReadBuffer result.buffer |> ignore
-    
-    
 
-let create tcpClient configuration checkRequest =
+let create tcpClient configuration asyncCheckRequest =
     let session = {
         tcpClient = tcpClient
         networkStream = tcpClient.GetStream ()
-        startReceive = startReceive checkRequest
+        startReceive = startReceive asyncCheckRequest
     }
-    startReceive checkRequest session configuration 
+    startReceive asyncCheckRequest session configuration 

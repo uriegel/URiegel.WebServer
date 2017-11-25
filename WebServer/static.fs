@@ -139,7 +139,7 @@ let asyncRedirectDirectory url responseData = async {
         do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
 }
 
-let serveStatic requestData = async {
+let asyncServeStatic requestData = async {
     let responseData = create requestData
     let file = checkFile requestData.header.url requestData
     if file <> "" then  

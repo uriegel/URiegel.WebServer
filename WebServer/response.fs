@@ -74,50 +74,52 @@ let asyncSendJson responseData json = async {
     do! asyncSendJsonBytes responseData <| memStm.GetBuffer ()
 }
 
-let asyncSendStream responseData (stream: Stream) (contentType: string) lastModified = async {
-    let mutable headers = Map.empty
-    let mutable streamToSend = stream
-    if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None &&
-        (contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase)            
-        || contentType.StartsWith ("text/", StringComparison.CurrentCultureIgnoreCase)) then
+let asyncSendStream responseData (stream: Stream) (contentType: string) lastModified = 
+    async {
+        let mutable headers = Map.empty
+        let mutable streamToSend = stream
+        if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None &&
+            (contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase)            
+            || contentType.StartsWith ("text/", StringComparison.CurrentCultureIgnoreCase)) then
+            
+            let ms = new MemoryStream ()
+            use compressedStream = 
+                match responseData.requestData.header.contentEncoding.Value with    
+                | ContentEncoding.Deflate ->
+                    headers <- headers.Add("Content-Encoding", "deflate") 
+                    new DeflateStream (ms, CompressionMode.Compress, true) :> Stream
+                | ContentEncoding.GZip ->
+                    headers <- headers.Add("Content-Encoding", "gzip")
+                    new GZipStream (ms, CompressionMode.Compress, true) :> Stream
+                | _ -> null
+
+            do! stream.CopyToAsync compressedStream |> Async.AwaitTask
+            compressedStream.Close();
+            ms.Position <- 0L 
+            
+            streamToSend <- ms
+
+        headers <- initialize headers contentType (int streamToSend.Length) lastModified false
+
+        if contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase) 
+            || contentType.StartsWith ("text/css", StringComparison.CurrentCultureIgnoreCase)
+            || contentType.StartsWith ("text/html", StringComparison.CurrentCultureIgnoreCase) then
+                headers <- headers.Add("Expires", DateTime.Now.ToUniversalTime().ToString "r")
+
+        let headerBytes = createHeaderOk responseData headers 
+        do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
         
-        let ms = new MemoryStream ()
-        use compressedStream = 
-            match responseData.requestData.header.contentEncoding.Value with    
-            | ContentEncoding.Deflate ->
-                headers <- headers.Add("Content-Encoding", "deflate") 
-                new DeflateStream (ms, CompressionMode.Compress, true) :> Stream
-            | ContentEncoding.GZip ->
-                headers <- headers.Add("Content-Encoding", "gzip")
-                new GZipStream (ms, CompressionMode.Compress, true) :> Stream
-            | _ -> null
-        do! stream.CopyToAsync compressedStream |> Async.AwaitTask
-        compressedStream.Close();
-        ms.Position <- 0L 
-        
-        streamToSend <- ms
+        if responseData.requestData.header.method <> Method.Head then
+            let bytes = Array.zeroCreate 8192
 
-    headers <- initialize headers contentType (int streamToSend.Length) lastModified false
-
-    if contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase) 
-        || contentType.StartsWith ("text/css", StringComparison.CurrentCultureIgnoreCase)
-        || contentType.StartsWith ("text/html", StringComparison.CurrentCultureIgnoreCase) then
-            headers <- headers.Add("Expires", DateTime.Now.ToUniversalTime().ToString "r")
-
-    let headerBytes = createHeaderOk responseData headers 
-    do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
-    
-    if responseData.requestData.header.method <> Method.Head then
-        let bytes = Array.zeroCreate 8192
-
-        let mutable dataToSend = true
-        while dataToSend do 
-            let! read = streamToSend.AsyncRead (bytes, 0, bytes.Length)
-            if read <> 0 then
-                do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, read)
-            else
-                dataToSend <- false
-}
+            let mutable dataToSend = true
+            while dataToSend do 
+                let! read = streamToSend.AsyncRead (bytes, 0, bytes.Length)
+                if read <> 0 then
+                    do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, read)
+                else
+                    dataToSend <- false
+    }
 
 let asyncSendText responseData = async {
     do! asyncSendError responseData @"<title>CAESAR</title>
