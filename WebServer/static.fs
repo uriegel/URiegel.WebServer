@@ -80,19 +80,20 @@ let asyncInternalSendFile file responseData = async {
 
     let isModifiedSince = 
         match responseData.requestData.header.Header "If-Modified-Since" with
-            | "" -> ""
-            | v -> 
-                let pos = v.IndexOf ";"
-                if pos <> -1 then v.Substring (0, pos) else v
+        | None -> None
+        | Some a when a = "" -> None
+        | Some v -> 
+            let pos = v.IndexOf ";"
+            Some (if pos <> -1 then v.Substring (0, pos) else v)
         
     let modified =  
-        if isModifiedSince <> "" then
-            let ifModifiedSince = Convert.ToDateTime isModifiedSince
+        match isModifiedSince with
+        | Some v ->
+            let ifModifiedSince = Convert.ToDateTime v
             let fileTime = fi.LastWriteTime.AddTicks -(fi.LastWriteTime.Ticks % TimeSpan.FromSeconds(1.0).Ticks)
             let diff = fileTime - ifModifiedSince
             diff > TimeSpan.FromMilliseconds 0.0
-        else
-            true
+        | None -> true
 
     if modified then
         let contentType = 

@@ -22,11 +22,7 @@ type Header =
         host: Lazy<string>
         contentEncoding: Lazy<ContentEncoding>
     }
-    member this.Header key = 
-        let value = this.rawHeaders.TryFind key
-        match value with
-        | Some x -> x
-        | None -> ""
+    member this.Header key = this.rawHeaders.TryFind key
 
 let initialize headerResult = 
     let headerParts = headerResult.header.Split ([|"\r\n"|], StringSplitOptions.RemoveEmptyEntries)
