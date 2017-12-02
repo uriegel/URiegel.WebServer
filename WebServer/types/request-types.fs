@@ -17,5 +17,5 @@ type Buffer = {
 
 type HeaderResult = {
     buffer: Buffer
-    header: string
+    header: string option
 }

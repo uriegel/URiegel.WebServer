@@ -20,12 +20,12 @@ let private checkHeaders buffer =
     match index.IsSome with
     | true ->             
         {
-            header = Encoding.ASCII.GetString (buffer.buffer, 0, index.Value - 1)
+            header = Some (Encoding.ASCII.GetString (buffer.buffer, 0, index.Value - 1))
             buffer = buffer
         } 
     | false ->
         {
-            header = ""
+            header = None
             buffer = buffer
         } 
 
@@ -69,7 +69,7 @@ let private startReceive asyncCheckRequest session configuration  =
     } 
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
-        if result.header <> "" then
+        if result.header.IsSome then
             startRequesting result configuration session asyncCheckRequest
         else
             startReadBuffer result.buffer |> ignore
