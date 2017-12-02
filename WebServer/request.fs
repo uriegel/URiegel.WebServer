@@ -14,7 +14,7 @@ let startRequesting headerResult configuration requestSession asyncCheckRequest 
         async {
             match header.Header "Upgrade" with
             | Some "websocket" -> 
-                upgrade header
+                upgrade header responseData.response.Value requestData.session.networkStream
             | _ ->
                 let! processed = asyncCheckRequest header.url responseData
                 if not processed then
