@@ -15,6 +15,7 @@
     <Compile Include="response-headers.fs" />
     <Compile Include="response.fs" />
     <Compile Include="static.fs" />
+    <Compile Include="websocket.fs" />
     <Compile Include="request.fs" />
     <Compile Include="sessions/request-session.fs" />
     <Compile Include="server.fs" />

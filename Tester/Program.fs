@@ -35,9 +35,7 @@ let asyncRequest (url: string) responseData =
 let configuration = Configuration.create {
         Configuration.createEmpty() with 
             Port = 20000; 
-            WebRoot = "/home/uwe/Projekte/Node/WebServerElectron/web/" 
-            //WebRoot = "D:\Projekte\WebServerSharp\web" 
-            // WebRoot = "C:\Users\urieg\Documents\Projects\Projekte\webroot" 
+            WebRoot = "webroot" 
     }
     
 try
