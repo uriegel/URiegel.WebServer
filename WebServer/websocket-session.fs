@@ -6,8 +6,7 @@ open Session
 let asyncMessageReceived (headerBuffer: byte[]) callback = 
     async {
         //int read = 2;
-        let fin = (headerBuffer.[0] &&& 0x80uy = 0x80uy)
-        printf "%A" fin
+        //let fin = (headerBuffer.[0] &&& 0x80uy = 0x80uy)
         let opcode = enum<OpCode>(int (headerBuffer.[0] &&& 0xfuy))
         match opcode with
         | OpCode.Close -> callback.onClose callback.id
