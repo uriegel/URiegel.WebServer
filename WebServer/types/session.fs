@@ -15,7 +15,8 @@ type WebSocketSession = {
 
 type WebSocketCallback = {
 //    asyncOnMessage: byte[]->Async<unit>
-    onClose: unit->unit
+    id: string
+    onClose: string->unit
 }
 
 type SessionCallback = {

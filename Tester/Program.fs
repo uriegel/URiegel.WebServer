@@ -32,11 +32,12 @@ let asyncRequest (requestSession: RequestSession) =
         | _ -> return false
     }
 
-let onWebSocketClose () =
+let onWebSocketClose _ =
     printfn "%s" "gekloßt"
     
 let onNewWebSocket _ __ = 
     {
+        id = ""
         onClose = onWebSocketClose
     }
 

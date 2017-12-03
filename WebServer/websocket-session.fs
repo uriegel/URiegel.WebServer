@@ -2,7 +2,7 @@ module WebSocketSession
 open System.IO
 open OpCode
 open Session
- 
+
 let asyncMessageReceived (headerBuffer: byte[]) callback = 
     async {
         //int read = 2;
@@ -10,7 +10,7 @@ let asyncMessageReceived (headerBuffer: byte[]) callback =
         printf "%A" fin
         let opcode = enum<OpCode>(int (headerBuffer.[0] &&& 0xfuy))
         match opcode with
-        | OpCode.Close -> callback.onClose ()
+        | OpCode.Close -> callback.onClose callback.id
         | _ -> ()
     }
 
