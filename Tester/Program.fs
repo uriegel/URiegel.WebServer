@@ -32,6 +32,14 @@ let asyncRequest (requestSession: RequestSession) =
         | _ -> return false
     }
 
+let onWebSocketClose () =
+    printfn "%s" "gekloßt"
+    
+let onNewWebSocket _ __ = 
+    {
+        onClose = onWebSocketClose
+    }
+
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
         Port = 20000; 
@@ -39,7 +47,7 @@ let configuration = Configuration.create {
 }
     
 try
-   let server = Server.create configuration { asyncRequest = asyncRequest }
+   let server = Server.create configuration { asyncRequest = asyncRequest; onNewWebSocket = onNewWebSocket }
    server.start ()
    stdin.ReadLine() |> ignore
    server.stop ()

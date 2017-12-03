@@ -1,24 +1,24 @@
 module WebSocketSession
 open System.IO
 open OpCode
+open Session
  
-let asyncMessageReceived (headerBuffer: byte[]) = 
+let asyncMessageReceived (headerBuffer: byte[]) callback = 
     async {
         //int read = 2;
         let fin = (headerBuffer.[0] &&& 0x80uy = 0x80uy)
         printf "%A" fin
         let opcode = enum<OpCode>(int (headerBuffer.[0] &&& 0xfuy))
-        printf "%O" opcode
+        match opcode with
+        | OpCode.Close -> callback.onClose ()
+        | _ -> ()
     }
 
-let startReceiving (networkStream: Stream) = 
+let startReceiving (networkStream: Stream) callback = 
     async {
-        // onNewWebSocket  {
-        //     onClosed = 
-        // }
         let headerBuffer = Array.zeroCreate 14
         let! read = networkStream.AsyncRead (headerBuffer, 0,  2)
         if read = 0 then
             failwith "closed"
-        do! asyncMessageReceived headerBuffer
+        do! asyncMessageReceived headerBuffer callback
     } |> Async.StartImmediate

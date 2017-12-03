@@ -3,6 +3,7 @@ open Header
 open ResponseData
 open Static
 open Session
+open WebSocket
 
 let startRequesting headerResult configuration requestSession sessionCallback =
     match initialize headerResult with
@@ -13,8 +14,7 @@ let startRequesting headerResult configuration requestSession sessionCallback =
         async {
             match header.Header "Upgrade" with
             | Some "websocket" -> 
-                ()
-          //      upgrade header responseData.response.Value requestData.session.networkStream onNewWebSocket
+                upgrade header responseData.response.Value requestData.session.networkStream sessionCallback
             | _ ->
                 let! processed = sessionCallback.asyncRequest {
                     url = header.url
