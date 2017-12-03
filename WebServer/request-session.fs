@@ -6,6 +6,7 @@ open System.IO
 open System.Net.Sockets
 open System.Security.Authentication
 open System.Text
+open Session
 
 let private close session fullClose =
     if fullClose then
@@ -60,7 +61,7 @@ let private startReadBuffer buffer action =
                 close buffer.session true
     } |> Async.StartImmediate
 
-let private startReceive asyncCheckRequest session configuration  =
+let private startReceive sessionCallback session configuration  =
     let buffer = {
         session = session
         buffer = Array.zeroCreate 20000
@@ -70,14 +71,14 @@ let private startReceive asyncCheckRequest session configuration  =
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
         if result.header.IsSome then
-            startRequesting result configuration session asyncCheckRequest
+            startRequesting result configuration session sessionCallback
         else
             startReadBuffer result.buffer |> ignore
 
-let create tcpClient configuration asyncCheckRequest =
+let create tcpClient configuration sessionCallback =
     let session = {
         tcpClient = tcpClient
         networkStream = tcpClient.GetStream ()
-        startReceive = startReceive asyncCheckRequest
+        startReceive = startReceive sessionCallback
     }
-    startReceive asyncCheckRequest session configuration 
+    startReceive sessionCallback session configuration 

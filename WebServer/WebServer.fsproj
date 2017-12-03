@@ -12,12 +12,15 @@
     <Compile Include="types/header.fs" />
     <Compile Include="types/request-data.fs" />
     <Compile Include="types/response-data.fs" />
+    <Compile Include="types/opcode.fs" />
+    <Compile Include="types/session.fs" />
     <Compile Include="response-headers.fs" />
     <Compile Include="response.fs" />
     <Compile Include="static.fs" />
+    <Compile Include="websocket-session.fs" />
     <Compile Include="websocket.fs" />
     <Compile Include="request.fs" />
-    <Compile Include="sessions/request-session.fs" />
+    <Compile Include="request-session.fs" />
     <Compile Include="server.fs" />
   </ItemGroup>
 </Project>

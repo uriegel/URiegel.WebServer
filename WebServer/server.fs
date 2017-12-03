@@ -3,6 +3,7 @@ open System
 open System.Net
 open System.Net.Sockets
 open ResponseData
+open Session
 
 // TODO: TLS
 
@@ -12,15 +13,11 @@ open ResponseData
 type Server = {
     start: unit->unit
     stop: unit->unit
-    registerRequests: (string->ResponseData->Async<bool>)->unit
     configuration: Configuration.Value
 }
-
-let mutable private asyncRequest = fun _ _ -> async{ return false }
-
-let private onConnected tcpClient configuration = 
+let private onConnected tcpClient configuration sessionCallback = 
     try
-        RequestSession.create tcpClient configuration asyncRequest 
+        RequestSession.create tcpClient configuration sessionCallback 
     with
     | :? SocketException as se when se.NativeErrorCode = 10054
         -> ()
@@ -29,26 +26,26 @@ let private onConnected tcpClient configuration =
     | ex -> printfn "Error in asyncOnConnected occurred: %s" <| ex.ToString () 
 
 
-let rec startConnecting (listener: TcpListener) configuration = 
+let rec startConnecting (listener: TcpListener) configuration sessionCallback = 
     async {
         try
             let! client = listener.AcceptTcpClientAsync () |> Async.AwaitTask
             //client.NoDelay <- true
-            onConnected client configuration
-            startConnecting listener configuration
+            onConnected client configuration sessionCallback
+            startConnecting listener configuration sessionCallback
         with
         | :? SocketException as se when se.SocketErrorCode = SocketError.Interrupted 
             -> printfn "Stopping listening..."
         | ex -> printfn "Could not stop HTTP Listener: %s" <|ex.ToString () 
     } |> Async.StartImmediate
 
-let private start (listener: TcpListener, configuration: Configuration.Value) () = 
+let private start (listener: TcpListener, configuration: Configuration.Value, sessionCallback: SessionCallback) () = 
     try
         printfn "Starting HTTP Listener..."
         // TODO: Ansonsten kann nach Beenden des Listeners für 2 min kein neuer gestartet werden!
         //listener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)    
         listener.Start ()
-        startConnecting listener configuration 
+        startConnecting listener configuration sessionCallback
         printfn "HTTP Listener started"
     with 
     | ex -> 
@@ -63,10 +60,7 @@ let private stop (listener: TcpListener) () =
     with 
         | ex -> printfn "Could not stop HTTP Listener: %s" <|ex.ToString ()
 
-let private registerRequests (request: string->ResponseData->Async<bool>) =
-    asyncRequest <- request
-
-let create (configuration: Configuration.Value) = 
+let create (configuration: Configuration.Value) sessionCallback = 
     printfn "Initializing Server..."
     //ServicePointManager.SecurityProtocol = 10000 |> ignore
     printfn "Domain name: %s" configuration.DomainName
@@ -82,9 +76,8 @@ let create (configuration: Configuration.Value) =
     printfn "Server initialized"
     
     {
-        start = start (listener, configuration)
+        start = start (listener, configuration, sessionCallback)
         stop = stop listener
-        registerRequests = registerRequests
         configuration = configuration
     }
     

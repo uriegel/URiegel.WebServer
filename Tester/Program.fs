@@ -1,6 +1,6 @@
 ﻿open System.Runtime.Serialization
 open Configuration
-open ResponseData
+open Session
 
 [<DataContract>]
 type Command = {
@@ -13,11 +13,11 @@ type Command = {
 
 printfn "Starting Test Server"
 
-let asyncRequest (url: string) responseData = 
+let asyncRequest (requestSession: RequestSession) = 
     async {
-        match responseData.query.Value.method with
+        match requestSession.query.Value.method with
         | "affe" ->
-            let test = responseData.query.Value
+            let test = requestSession.query.Value
             let param1 = test.Query "param1" 
             let param2 = test.Query "param2"
             let param3 = test.Query "param41"
@@ -27,23 +27,22 @@ let asyncRequest (url: string) responseData =
                 requestId = "RekwestEidie"
             }
             //System.Threading.Thread.Sleep 3
-            do! Response.asyncSendJson responseData command
+            do! requestSession.asyncSendJson (command :> obj)
             return true
         | _ -> return false
     }
 
 let configuration = Configuration.create {
-        Configuration.createEmpty() with 
-            Port = 20000; 
-            WebRoot = "webroot" 
-    }
+    Configuration.createEmpty() with 
+        Port = 20000; 
+        WebRoot = "webroot" 
+}
     
 try
-    let server = Server.create configuration
-    server.registerRequests asyncRequest
-    server.start ()
-    stdin.ReadLine() |> ignore
-    server.stop ()
+   let server = Server.create configuration { asyncRequest = asyncRequest }
+   server.start ()
+   stdin.ReadLine() |> ignore
+   server.stop ()
 with
-    | ex -> printfn "Fehler: %O" ex
+   | ex -> printfn "Fehler: %O" ex
 

@@ -1,7 +1,7 @@
 module ResponseHeaders
 open System
 
-let initialize (initialHeaders: Map<string, string>) contentType (contentLength: int) lastModified noCache =
+let initialize (initialHeaders: Map<string, string>) contentType contentLength lastModified noCache =
     let mutable headers = initialHeaders
     if contentType <> "" then headers <- headers.Add("Content-Type", contentType)
     if lastModified <> "" then headers <- headers.Add("Last-Modified", lastModified)

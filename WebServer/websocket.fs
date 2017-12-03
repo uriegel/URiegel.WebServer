@@ -4,6 +4,7 @@ open System.Security.Cryptography
 open System.Text
 open System
 open System.IO
+open WebSocketSession
 
 let private webSocketKeyConcat = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -17,5 +18,6 @@ let upgrade (header: Header) httpResponse (networkStream: Stream) =
         let headerBytes = ASCIIEncoding.ASCII.GetBytes response
         async {
             do! networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+            startReceiving networkStream
         } |> Async.StartImmediate
     | None -> ()

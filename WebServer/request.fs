@@ -1,11 +1,10 @@
 module Request
-open System
 open Header
 open ResponseData
 open Static
-open WebSocket
+open Session
 
-let startRequesting headerResult configuration requestSession asyncCheckRequest =
+let startRequesting headerResult configuration requestSession sessionCallback =
     match initialize headerResult with
     | Some header ->
         let requestData = RequestData.create configuration header requestSession
@@ -14,9 +13,15 @@ let startRequesting headerResult configuration requestSession asyncCheckRequest 
         async {
             match header.Header "Upgrade" with
             | Some "websocket" -> 
-                upgrade header responseData.response.Value requestData.session.networkStream
+                ()
+          //      upgrade header responseData.response.Value requestData.session.networkStream onNewWebSocket
             | _ ->
-                let! processed = asyncCheckRequest header.url responseData
+                let! processed = sessionCallback.asyncRequest {
+                    url = header.url
+                    query = responseData.query
+                    asyncSendJson = Response.asyncSendJson responseData
+                }
+                
                 if not processed then
                     do! asyncServeStatic requestData
                 requestSession.startReceive requestSession configuration
