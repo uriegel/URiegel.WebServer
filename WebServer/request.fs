@@ -5,7 +5,7 @@ open Static
 open Session
 open WebSocket
 
-let startRequesting headerResult configuration requestSession sessionCallback =
+let startRequesting headerResult configuration requestSession =
     match initialize headerResult with
     | Some header ->
         let requestData = RequestData.create configuration header requestSession
@@ -14,16 +14,19 @@ let startRequesting headerResult configuration requestSession sessionCallback =
         async {
             match header.Header "Upgrade" with
             | Some "websocket" -> 
-                upgrade header responseData.response.Value requestData.session.networkStream sessionCallback
+                upgrade header responseData.response.Value requestData.session.networkStream configuration.onNewWebSocket
             | _ ->
-                let! processed = sessionCallback.asyncRequest {
-                    url = header.url
-                    query = responseData.query
-                    asyncSendJson = Response.asyncSendJson responseData
-                }
-                
-                if not processed then
-                    do! asyncServeStatic requestData
+                if configuration.favicon <> "" && header.url = "/favicon.ico" then 
+                    do! asyncServeFavicon requestData configuration.favicon
+                else
+                    let! processed = configuration.asyncRequest {
+                        url = header.url
+                        query = responseData.query
+                        asyncSendJson = Response.asyncSendJson responseData
+                    }
+                    
+                    if not processed then
+                        do! asyncServeStatic requestData
                 requestSession.startReceive requestSession configuration
         } |> Async.StartImmediate
     | None -> ()

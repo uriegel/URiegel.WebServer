@@ -2,6 +2,8 @@ module Configuration
 open System
 open System.IO
 open System.Net
+open Session
+open System.Threading.Tasks
 
 type Value = {
     LocalAddress: IPAddress
@@ -10,6 +12,9 @@ type Value = {
     SocketTimeout: int
     Port: int
     IsTlsEnabled: bool 
+    favicon: string
+    asyncRequest: RequestSession->Async<bool>
+    onNewWebSocket: string->WebSocketSession->WebSocketCallback
 }
 
 let createEmpty () = {
@@ -19,6 +24,9 @@ let createEmpty () = {
     SocketTimeout = 20000
     Port = 80
     IsTlsEnabled = false
+    favicon = ""
+    asyncRequest = fun _ -> Task.FromResult<bool>(false) |> Async.AwaitTask
+    onNewWebSocket = fun _ __ -> { id = ""; onClose = fun _ -> () }
 }
 
 let create configuration = {

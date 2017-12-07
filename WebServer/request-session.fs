@@ -61,7 +61,7 @@ let private startReadBuffer buffer action =
                 close buffer.session true
     } |> Async.StartImmediate
 
-let private startReceive sessionCallback session configuration  =
+let private startReceive session configuration  =
     let buffer = {
         session = session
         buffer = Array.zeroCreate 20000
@@ -71,14 +71,14 @@ let private startReceive sessionCallback session configuration  =
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
         if result.header.IsSome then
-            startRequesting result configuration session sessionCallback
+            startRequesting result configuration session
         else
             startReadBuffer result.buffer |> ignore
 
-let create tcpClient configuration sessionCallback =
+let create tcpClient configuration =
     let session = {
         tcpClient = tcpClient
         networkStream = tcpClient.GetStream ()
-        startReceive = startReceive sessionCallback
+        startReceive = startReceive
     }
-    startReceive sessionCallback session configuration 
+    startReceive session configuration 

@@ -19,8 +19,4 @@ type WebSocketCallback = {
     onClose: string->unit
 }
 
-type SessionCallback = {
-    asyncRequest: RequestSession->Async<bool>
-    onNewWebSocket: string->WebSocketSession->WebSocketCallback
-}
 

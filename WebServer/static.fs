@@ -150,3 +150,14 @@ let asyncServeStatic requestData = async {
     else
         do! asyncSendNotFound responseData
 }
+
+let asyncServeFavicon requestData favicon = async {
+    let responseData = create requestData
+    let file = checkFile ("/" + favicon) requestData
+    if file <> "" then  
+        do! asyncSendFile file responseData
+    elif not (requestData.header.url.EndsWith "/") then
+        do! asyncRedirectDirectory (requestData.header.url + "/") responseData 
+    else
+        do! asyncSendNotFound responseData
+}

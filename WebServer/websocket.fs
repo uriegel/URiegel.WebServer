@@ -11,7 +11,7 @@ let private webSocketKeyConcat = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 let asyncSendMessage () = ()
 
-let upgrade (header: Header) httpResponse (networkStream: Stream) (sessionCallback: SessionCallback) = 
+let upgrade (header: Header) httpResponse (networkStream: Stream) (onNewWebSocket: string->WebSocketSession->WebSocketCallback) = 
     match header.Header "Sec-WebSocket-Key" with
     | Some key ->
         let secKey = key + webSocketKeyConcat
@@ -21,7 +21,7 @@ let upgrade (header: Header) httpResponse (networkStream: Stream) (sessionCallba
         let headerBytes = ASCIIEncoding.ASCII.GetBytes response
         async {
             do! networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
-            let callback = sessionCallback.onNewWebSocket "TODO" { asyncSendMessage = asyncSendMessage } 
+            let callback = onNewWebSocket "TODO" { asyncSendMessage = asyncSendMessage } 
             startReceiving networkStream callback
             ()
         } |> Async.StartImmediate

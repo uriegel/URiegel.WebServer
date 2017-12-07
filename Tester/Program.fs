@@ -43,12 +43,15 @@ let onNewWebSocket _ __ =
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        Port = 20000; 
+        Port = 40000; 
         WebRoot = "webroot" 
+        onNewWebSocket = onNewWebSocket
+        asyncRequest = asyncRequest
+        favicon = "Uwe.jpg"
 }
     
 try
-   let server = Server.create configuration { asyncRequest = asyncRequest; onNewWebSocket = onNewWebSocket }
+   let server = Server.create configuration 
    server.start ()
    stdin.ReadLine() |> ignore
    server.stop ()
