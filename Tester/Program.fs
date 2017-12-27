@@ -43,7 +43,6 @@ let onNewWebSocket _ __ =
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        Port = 40000; 
         WebRoot = "webroot" 
         onNewWebSocket = onNewWebSocket
         asyncRequest = asyncRequest
