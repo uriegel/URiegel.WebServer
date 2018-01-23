@@ -22,11 +22,7 @@ let asyncGetJson (requestData: RequestData.RequestData) () =
         //memStm.Capacity <- int memStm.Length
         //do! asyncSendJsonBytes responseData <| memStm.GetBuffer ()
       //  do! 
-    let affe = requestData.buffer.buffer.Length
-    let affi = requestData.buffer.currentIndex
-    let aff = requestData.buffer.read
-
-    Encoding.UTF8.GetString (requestData.buffer.buffer, 0, aff)
+    Encoding.UTF8.GetString (requestData.buffer.buffer, requestData.buffer.currentIndex, requestData.buffer.read - requestData.buffer.currentIndex)
 
     //"HAllo"
     //} |> Async.StartImmediate

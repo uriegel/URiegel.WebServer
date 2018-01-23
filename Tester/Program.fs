@@ -12,7 +12,6 @@ type Command = {
 }
 
 // TODO:
-// in Buffer headerEndPosition speichern
 // Deserialize JSON
 // Testprogramm: TCPSender: send Header, dann Send Json
 // Testprogramm: dann SendJson > 20000 bzw. Buffersize = 1000 Json > 4000
