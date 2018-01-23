@@ -11,6 +11,12 @@ type Command = {
     mutable requestId: string
 }
 
+// TODO:
+// in Buffer headerEndPosition speichern
+// Deserialize JSON
+// Testprogramm: TCPSender: send Header, dann Send Json
+// Testprogramm: dann SendJson > 20000 bzw. Buffersize = 1000 Json > 4000
+
 printfn "Starting Test Server"
 
 let asyncRequest (requestSession: RequestSession) = 
@@ -32,6 +38,16 @@ let asyncRequest (requestSession: RequestSession) =
         | _ -> return false
     }
 
+let asyncRequestTestJson (requestSession: RequestSession) = 
+    async {
+        let method = requestSession.url.Substring(requestSession.url.LastIndexOf('/') + 1) 
+        match method with
+        | "getItems" -> 
+            let jason = requestSession.asyncGetJson ()
+            return true
+        | _ -> return false
+    }
+
 let onWebSocketClose _ =
     printfn "%s" "gekloßt"
     
@@ -43,9 +59,17 @@ let onNewWebSocket _ __ =
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        WebRoot = "webroot" 
+        
+        
+        
+        //WebRoot = "webroot" 
+        WebRoot = "C:\Users\urieg\Documents\Projekte\Commander\WebApp"
+        Port = 20000
+        
+        
+        
         onNewWebSocket = onNewWebSocket
-        asyncRequest = asyncRequest
+        asyncRequest = asyncRequestTestJson
         favicon = "Uwe.jpg"
 }
     

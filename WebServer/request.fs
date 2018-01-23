@@ -4,11 +4,38 @@ open ResponseData
 open Static
 open Session
 open WebSocket
+open System.Text
 
-let startRequesting headerResult configuration requestSession =
+let asyncGetJson (requestData: RequestData.RequestData) () = 
+    //async {
+        //let jason = DataContractJsonSerializer (json.GetType())
+        //use memStm = new MemoryStream ()
+        //let streamToDeserialize = 
+        //    match responseData.requestData.header.contentEncoding.Value with
+        //    | ContentEncoding.Deflate -> new DeflateStream (memStm, CompressionMode.Compress, true) :> Stream
+        //    | ContentEncoding.GZip -> new GZipStream (memStm, CompressionMode.Compress, true) :> Stream
+        //    | _ -> memStm :> Stream
+        //jason.WriteObject (streamToDeserialize, json)
+        //if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None then 
+        //    streamToDeserialize.Close ()
+
+        //memStm.Capacity <- int memStm.Length
+        //do! asyncSendJsonBytes responseData <| memStm.GetBuffer ()
+      //  do! 
+    let affe = requestData.buffer.buffer.Length
+    let affi = requestData.buffer.currentIndex
+    let aff = requestData.buffer.read
+
+    Encoding.UTF8.GetString (requestData.buffer.buffer, 0, aff)
+
+    //"HAllo"
+    //} |> Async.StartImmediate
+
+
+let startRequesting headerResult configuration requestSession buffer =
     match initialize headerResult with
     | Some header ->
-        let requestData = RequestData.create configuration header requestSession
+        let requestData = RequestData.create configuration header requestSession buffer
         let responseData = create requestData
         
         async {
@@ -23,6 +50,7 @@ let startRequesting headerResult configuration requestSession =
                         url = header.url
                         query = responseData.query
                         asyncSendJson = Response.asyncSendJson responseData
+                        asyncGetJson = asyncGetJson requestData
                     }
                     
                     if not processed then

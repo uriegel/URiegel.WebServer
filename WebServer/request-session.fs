@@ -6,7 +6,6 @@ open System.IO
 open System.Net.Sockets
 open System.Security.Authentication
 open System.Text
-open Session
 
 let private close session fullClose =
     if fullClose then
@@ -71,7 +70,7 @@ let private startReceive session configuration  =
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
         if result.header.IsSome then
-            startRequesting result configuration session
+            startRequesting result configuration session buffer
         else
             startReadBuffer result.buffer |> ignore
 

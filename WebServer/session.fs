@@ -6,6 +6,7 @@ type RequestSession = {
     url: string
     query: Lazy<Query>
     asyncSendJson: Object->Async<unit>
+    asyncGetJson: unit->string
 }
 
 type WebSocketSession = {
