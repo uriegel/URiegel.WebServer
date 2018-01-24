@@ -5,8 +5,11 @@ open Static
 open Session
 open WebSocket
 open System.Text
+open System.Runtime.Serialization.Json
+open System.IO
+open System
 
-let asyncGetJson (requestData: RequestData.RequestData) () = 
+let asyncGetJson<'T> (requestData: RequestData.RequestData) (t: Type) = 
     //async {
         //let jason = DataContractJsonSerializer (json.GetType())
         //use memStm = new MemoryStream ()
@@ -22,9 +25,10 @@ let asyncGetJson (requestData: RequestData.RequestData) () =
         //memStm.Capacity <- int memStm.Length
         //do! asyncSendJsonBytes responseData <| memStm.GetBuffer ()
       //  do! 
-    Encoding.UTF8.GetString (requestData.buffer.buffer, requestData.buffer.currentIndex, requestData.buffer.read - requestData.buffer.currentIndex)
+    let jason = DataContractJsonSerializer t
+    use memStm = new MemoryStream (requestData.buffer.buffer, requestData.buffer.currentIndex, requestData.buffer.read - requestData.buffer.currentIndex)
+    jason.ReadObject (memStm) :?> 'T
 
-    //"HAllo"
     //} |> Async.StartImmediate
 
 

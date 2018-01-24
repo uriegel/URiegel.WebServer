@@ -12,7 +12,6 @@ type Command = {
 }
 
 // TODO:
-// Deserialize JSON
 // Testprogramm: TCPSender: send Header, dann Send Json
 // Testprogramm: dann SendJson > 20000 bzw. Buffersize = 1000 Json > 4000
 
@@ -37,12 +36,26 @@ let asyncRequest (requestSession: RequestSession) =
         | _ -> return false
     }
 
+[<DataContract>]
+type Input = {
+    [<DataMember>]
+    mutable directory: string
+
+    [<DataMember>]
+    mutable id: string
+
+    [<DataMember>]
+    mutable requestNumber: int
+
+    [<DataMember>]
+    mutable affe: int
+}
 let asyncRequestTestJson (requestSession: RequestSession) = 
     async {
         let method = requestSession.url.Substring(requestSession.url.LastIndexOf('/') + 1) 
         match method with
         | "getItems" -> 
-            let jason = requestSession.asyncGetJson ()
+            let jason = requestSession.asyncGetJson typedefof<Input> :?> Input
             return true
         | _ -> return false
     }
