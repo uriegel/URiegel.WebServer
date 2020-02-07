@@ -1,6 +1,7 @@
 ﻿open System.Runtime.Serialization
 open Configuration
 open Session
+open System.IO
 
 [<DataContract>]
 type Command = {
@@ -9,6 +10,9 @@ type Command = {
 
     [<DataMember>]
     mutable requestId: string
+
+    [<DataMember>]
+    mutable count: int64
 }
 
 // TODO:
@@ -29,12 +33,30 @@ let asyncRequest (requestSession: RequestSession) =
             let command = {
                 cmd = "Kommando"
                 requestId = "RekwestEidie"
+                count= 45L
             }
             //System.Threading.Thread.Sleep 3
             do! requestSession.asyncSendJson (command :> obj)
             return true
         | _ -> return false
     }
+
+
+let teste () = 
+//     use fs = File.OpenRead("/home/uwe/server1.log")
+//     let buffer = Array.zeroCreate 20000000
+    
+//     let getLines () =
+//         let read = fs.Read (buffer, 0, buffer.Length)
+
+//         let getLinesFromBuffer (buffer: byte array) =
+//             Seq.unfold (fun (a, b) -> compare buffer 0L read '\n')
+//             | Seq.takewhile (fun i -> i < 9)
+//             let lineIndex = 
+//             4
+
+    4L
+
 
 [<DataContract>]
 type Input = {
@@ -55,7 +77,18 @@ let asyncRequestTestJson (requestSession: RequestSession) =
         let method = requestSession.url.Substring(requestSession.url.LastIndexOf('/') + 1) 
         match method with
         | "getItems" -> 
-            let jason = requestSession.asyncGetJson typedefof<Input> :?> Input
+            //let jason = requestSession.asyncGetJson typedefof<Input> :?> Input
+            //requestSession.asyncSendJson "Affe"
+
+            let count = teste ()
+
+            let command = {
+                cmd = "Kommando"
+                requestId = "RekwestEidie"
+                count = count
+            }
+            //System.Threading.Thread.Sleep 3
+            do! requestSession.asyncSendJson (command :> obj)            
             return true
         | _ -> return false
     }
@@ -74,8 +107,8 @@ let configuration = Configuration.create {
         
         
         
-        //WebRoot = "webroot" 
-        WebRoot = "C:\Users\urieg\Documents\Projekte\Commander\WebApp"
+        WebRoot = "webroot" 
+        //WebRoot = "C:\Users\urieg\Documents\Projekte\Commander\WebApp"
         Port = 20000
         
         
@@ -84,12 +117,75 @@ let configuration = Configuration.create {
         asyncRequest = asyncRequestTestJson
         favicon = "Uwe.jpg"
 }
-    
+
+type Line = {
+    pos: int64
+    length: int64
+}
+
+
 try
-   let server = Server.create configuration 
-   server.start ()
-   stdin.ReadLine() |> ignore
-   server.stop ()
+
+
+    use fs = File.OpenRead("/home/uwe/server.log")
+    let buffer = Array.zeroCreate 20000000
+    //let buffer = Array.zeroCreate 1000
+    
+    let getLines () =
+        let getLinesBuffer () =
+            let fileOffset = fs.Position
+            if fileOffset < fs.Length then
+
+                let read = fs.Read (buffer, 0, buffer.Length)
+
+                let rec findChr (buffer: byte array) index maxLength searchChr = 
+                    match index < maxLength with
+                    | true when buffer.[index] = searchChr -> Some index
+                    | true -> findChr buffer (index + 1) maxLength searchChr
+                    | false -> None 
+
+                Some ({ pos = 0L; length = 0L } // Initial state
+                    |> Seq.unfold (fun state ->
+                        match findChr buffer (int state.pos) read (byte '\n') with
+                        | Some pos -> Some({ pos = state.pos + fileOffset; length = (int64 pos - state.pos - 1L) }, { pos = int64 (pos + 1); length = 0L })
+                        | None -> None
+                    )
+                )
+            else
+                None
+
+        let ret = 
+            0 |> Seq.unfold (fun state ->
+                match getLinesBuffer () with
+                | Some lines -> Some (lines, 0)
+                | None -> None) |> Seq.concat
+        ret
+        
+        // let rec getLinesBufferAt lines = 
+        //     seq {
+        //         match getLinesBuffer () with
+        //         | Some lines -> yield! getLinesBufferAt lines
+        //         | None -> yield lines
+        //     }
+
+        // getLinesBufferAt  |> Seq.concat
+
+        
+    let seq2 = getLines ()
+
+    printfn "\nThe"
+    let ret = seq2 |> Seq.toArray
+
+
+
+    printfn "\nThe sequence fib contains Fibonacci numbers. %d" ret.Length
+    // for x in ret do printf "%O " x
+    // printfn ""
+
+    let server = Server.create configuration 
+    server.start ()
+    stdin.ReadLine() |> ignore
+    server.stop ()
 with
-   | ex -> printfn "Fehler: %O" ex
+    | ex -> printfn "Fehler: %O" ex
 

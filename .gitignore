@@ -3,3 +3,4 @@ Tester/obj
 WebServer/bin
 WebServer/obj
 /packages/System.ValueTuple.4.3.1
+.ionide/symbolCache.db
