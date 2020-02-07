@@ -128,8 +128,7 @@ try
 
 
     use fs = File.OpenRead("/home/uwe/server.log")
-    let buffer = Array.zeroCreate 20000000
-    //let buffer = Array.zeroCreate 1000
+    let buffer = Array.zeroCreate 200000
     
     let getLines () =
         let getLinesBuffer () =
@@ -144,10 +143,10 @@ try
                     | true -> findChr buffer (index + 1) maxLength searchChr
                     | false -> None 
 
-                Some ({ pos = 0L; length = 0L } // Initial state
+                Some (0L  // Initial state
                     |> Seq.unfold (fun state ->
-                        match findChr buffer (int state.pos) read (byte '\n') with
-                        | Some pos -> Some({ pos = state.pos + fileOffset; length = (int64 pos - state.pos - 1L) }, { pos = int64 (pos + 1); length = 0L })
+                        match findChr buffer (int state) read (byte '\n') with
+                        | Some pos -> Some({ pos = state + fileOffset; length = (int64 pos - state - 1L) }, int64 (pos + 1))
                         | None -> None
                     )
                 )
