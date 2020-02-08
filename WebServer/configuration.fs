@@ -13,6 +13,7 @@ type Value = {
     Port: int
     IsTlsEnabled: bool 
     favicon: string
+    AllowOrigins: string array option
     asyncRequest: RequestSession->Async<bool>
     onNewWebSocket: string->WebSocketSession->WebSocketCallback
 }
@@ -25,6 +26,7 @@ let createEmpty () = {
     Port = 80
     IsTlsEnabled = false
     favicon = ""
+    AllowOrigins = None
     asyncRequest = fun _ -> Task.FromResult<bool>(false) |> Async.AwaitTask
     onNewWebSocket = fun _ __ -> { id = ""; onClose = fun _ -> () }
 }
@@ -35,4 +37,5 @@ let create configuration = {
         SocketTimeout = if configuration.SocketTimeout = 0 then 20000 else configuration.SocketTimeout
         Port =  if configuration.Port = 0 then 80 else configuration.Port
         DomainName = if configuration.DomainName = "" then (Dns.GetHostEntry(Environment.MachineName)).HostName else configuration.DomainName
+        AllowOrigins = configuration.AllowOrigins
 }

@@ -8,17 +8,34 @@ open System.IO.Compression
 open ResponseHeaders
 open System.Runtime.Serialization.Json
 
+let getAllowedOrigin (responseData: ResponseData) =
+    match responseData.requestData.configuration.AllowOrigins with
+        | Some allowOrigins ->
+            match responseData.requestData.header.origin.Value with
+            | Some origin -> 
+                match responseData.requestData.header.host.Value <> origin with
+                | true -> allowOrigins |> Seq.tryFind (fun n -> String.CompareOrdinal (n, origin) = 0) 
+                | false -> None
+            | _ -> None
+        | _ -> None
+
 let createHeader responseData (header: Map<string,string>) status statusDescription (payload: byte[] option) = 
     let responseHeaders = 
-        if not <| header.ContainsKey "Content-Length" then
-            header.Add("Connection", "close").
-                Add("Date", DateTime.Now.ToUniversalTime().ToString "R").
-                Add("Server", "UR Web Server")
-        else
-            header
-        
+        let header =
+            if not <| header.ContainsKey "Content-Length" then
+                header.Add("Connection", "close").
+                    Add("Date", DateTime.Now.ToUniversalTime().ToString "R").
+                    Add("Server", "UR Web Server")
+            else
+                header
+
+        match getAllowedOrigin responseData with
+        | Some originToAllow -> header.Add("Access-Control-Allow-Origin", originToAllow)
+        | None -> header
+
         // if (server.Configuration.XFrameOptions != XFrameOptions.NotSet)
         //     headers["X-Frame-Options"] = server.Configuration.XFrameOptions.ToString();
+
     let headerLines = responseHeaders |> Seq.map (fun n -> sprintf "%s: %s" n.Key n.Value)
     let headerString = sprintf "%s %d %s\r\n%s\r\n\r\n" responseData.response.Value status statusDescription <| String.Join ("\r\n", headerLines) 
 
@@ -32,6 +49,28 @@ let createHeader responseData (header: Map<string,string>) status statusDescript
 
 let createHeaderOk responseData header payload = 
     createHeader responseData header 200 "OK" payload
+
+let asyncSendOption responseData = 
+    async {
+        let responseHeaders = Map.empty    
+        let responseHeaders = 
+            match getAllowedOrigin responseData with
+            | Some _ -> 
+                let responseHeaders = 
+                    match responseData.requestData.header.rawHeaders.TryFind "Access-Control-Request-Headers" with
+                    | Some value -> responseHeaders.Add("Access-Control-Request-Headers", value)
+                    | None -> responseHeaders    
+                let responseHeaders = 
+                    match responseData.requestData.header.rawHeaders.TryFind "Access-Control-Request-Method" with
+                    | Some value -> responseHeaders.Add("Access-Control-Request-Method", value)
+                    | None -> responseHeaders    
+                responseHeaders
+            | None -> responseHeaders
+        
+        //let bytes = createHeader responseData responseHeaders 204 "No Content" None
+        let bytes = createHeader responseData responseHeaders 200 "OK" None
+        do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length)
+    } 
 
 let asyncSendError responseData htmlHead htmlBody status statusDescription = 
     async {

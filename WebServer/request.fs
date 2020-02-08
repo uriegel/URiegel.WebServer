@@ -1,5 +1,6 @@
 module Request
 open Header
+open Response
 open ResponseData
 open Static
 open Session
@@ -46,15 +47,19 @@ let startRequesting headerResult configuration requestSession buffer =
                 if configuration.favicon <> "" && header.url = "/favicon.ico" then 
                     do! asyncServeFavicon requestData configuration.favicon
                 else
-                    let! processed = configuration.asyncRequest {
-                        url = header.url
-                        query = responseData.query
-                        asyncSendJson = Response.asyncSendJson responseData
-                        asyncGetJson = asyncGetJson requestData
-                    }
+                    if requestData.header.method <> Method.Options then
+                        let! processed = configuration.asyncRequest {
+                            url = header.url
+                            query = responseData.query
+                            asyncSendJson = Response.asyncSendJson responseData
+                            asyncGetJson = asyncGetJson requestData
+                        }
                     
-                    if not processed then
-                        do! asyncServeStatic requestData
+                        if not processed then
+                            do! asyncServeStatic requestData
+                    else
+                        let responseData = create requestData
+                        do! asyncSendOption responseData
                 requestSession.startReceive requestSession configuration
         } |> Async.StartImmediate
     | None -> ()

@@ -6,6 +6,7 @@ type Method =
     Get = 0 
     | Post = 1
     | Head = 2
+    | Options = 3
 
 type ContentEncoding = 
     None = 0
@@ -20,6 +21,7 @@ type Header =
         http10: bool
         rawHeaders: Map<string,string>
         host: Lazy<string>
+        origin: Lazy<string option>
         contentEncoding: Lazy<ContentEncoding>
     }
     member this.Header key = this.rawHeaders.TryFind key
@@ -36,6 +38,8 @@ let initialize headerResult =
                 Method.Post
             elif headerParts.[0].StartsWith("HEAD") then
                 Method.Head
+            elif headerParts.[0].StartsWith("OPTIONS") then                
+                Method.Options
             else
                 failwithf "Unknown HTTP method %s" <| headerParts.[0]           
 
@@ -62,6 +66,8 @@ let initialize headerResult =
                 match value with
                     | Some x -> x
                     | None -> ""
+            origin = Lazy<string option>.Create <| fun () -> 
+                headers.TryFind "Origin"
             contentEncoding = Lazy<ContentEncoding>.Create <| fun () ->
                 let value = headers.TryFind "Accept-Encoding"
                 match value with
