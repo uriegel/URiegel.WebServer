@@ -1,4 +1,4 @@
-# WebServerFSharp
+# UwebServer (**Uw<em>e</em>**</em> Riegel **W<em>eb</em>Server**)
 A web server based on F# and .NET Core
 
 First steps:

@@ -2,6 +2,7 @@
 
     <PropertyGroup>
     	<OutputType>dll</OutputType>
+		<AssemblyName>UwebServer</AssemblyName>
     	<TargetFramework>netcoreapp3.1</TargetFramework>
   	</PropertyGroup>
 
