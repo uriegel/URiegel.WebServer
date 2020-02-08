@@ -7,7 +7,7 @@ open Session
 open WebSocket
 open System.IO
 
-let asyncGetJson<'T> (requestData: obj) () = 
+let asyncGetJson<'T> (requestData: obj) = 
     let requestDataValue = requestData :?> RequestData.RequestData
     let buffer = requestDataValue.buffer
     use memStm = new MemoryStream ( buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)

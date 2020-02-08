@@ -4,9 +4,9 @@
     	<OutputType>dll</OutputType>
 		<AssemblyName>UwebServer</AssemblyName>
     	<TargetFramework>netcoreapp3.1</TargetFramework>
-		<Version>1.1.0</Version>
-		<FileVersion>1.1.0.0</FileVersion>
-		<AssemblyVersion>1.1.0.0</AssemblyVersion>
+		<Version>1.1.2</Version>
+		<FileVersion>1.1.2.0</FileVersion>
+		<AssemblyVersion>1.1.2.0</AssemblyVersion>
 		<Authors>Uwe Riegel</Authors>
     	<Company>Uwe Riegel</Company>		
 		<Description>Web Server written for .Net Core</Description>
@@ -63,7 +63,7 @@
   	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="FSharpTools" Version="1.1.1" />
+	  <PackageReference Include="FSharpTools" Version="1.1.2" />
 	</ItemGroup>	
 
 </Project>

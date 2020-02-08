@@ -3,25 +3,15 @@ open Configuration
 open Session
 open Request
 
-[<DataContract>]
 type Command = {
-    [<DataMember>]
-    mutable cmd: string
-
-    [<DataMember>]
-    mutable requestId: string
-
-    [<DataMember>]
-    mutable count: int64
+    Cmd: string
+    RequestId: string
+    Count: int64
 }
 
-[<DataContract>]
 type Input = {
-    [<DataMember>]
-    mutable id: string
-
-    [<DataMember>]
-    mutable name: string
+    id: string
+    name: string
 }
 
 // TODO:
@@ -35,10 +25,11 @@ let asyncRequest (requestSession: RequestSession) =
         match requestSession.query.Value.method with
         | "runOperation" ->
             let jason = asyncGetJson<Input> requestSession.requestData 
+            let id = jason.id
             let command = {
-                cmd = "Kommando"
-                requestId = "RekwestEidie"
-                count= 45L
+                Cmd = "Kommando"
+                RequestId = "RekwestEidie"
+                Count= 45L
             }
             //System.Threading.Thread.Sleep 3
             do! requestSession.asyncSendJson (command :> obj)
@@ -50,9 +41,9 @@ let asyncRequest (requestSession: RequestSession) =
             let param3 = test.Query "param41"
 
             let command = {
-                cmd = "Kommando"
-                requestId = "RekwestEidie"
-                count= 45L
+                Cmd = "Kommando"
+                RequestId = "RekwestEidie"
+                Count= 45L
             }
             //System.Threading.Thread.Sleep 3
             do! requestSession.asyncSendJson (command :> obj)
