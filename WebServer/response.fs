@@ -6,7 +6,6 @@ open System.Text
 open Header
 open System.IO.Compression
 open ResponseHeaders
-open System.Runtime.Serialization.Json
 
 let getAllowedOrigin (responseData: ResponseData) =
     match responseData.requestData.configuration.AllowOrigins with
@@ -103,14 +102,14 @@ let private asyncSendJsonBytes responseData (bytes: byte[]) =
 
 let asyncSendJson responseData json = 
     async {
-        let jason = DataContractJsonSerializer (json.GetType())
         use memStm = new MemoryStream ()
         let streamToDeserialize = 
             match responseData.requestData.header.contentEncoding.Value with
             | ContentEncoding.Deflate -> new DeflateStream (memStm, CompressionMode.Compress, true) :> Stream
             | ContentEncoding.GZip -> new GZipStream (memStm, CompressionMode.Compress, true) :> Stream
             | _ -> memStm :> Stream
-        jason.WriteObject (streamToDeserialize, json)
+
+        Json.serializeStream streamToDeserialize json 
         if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None then 
             streamToDeserialize.Close ()
 

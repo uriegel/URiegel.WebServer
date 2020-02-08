@@ -1,7 +1,7 @@
 ﻿open System.Runtime.Serialization
 open Configuration
 open Session
-open System.IO
+open Request
 
 [<DataContract>]
 type Command = {
@@ -34,7 +34,7 @@ let asyncRequest (requestSession: RequestSession) =
     async {
         match requestSession.query.Value.method with
         | "runOperation" ->
-            let jason = requestSession.asyncGetJson typedefof<Input> :?> Input
+            let jason = asyncGetJson<Input> requestSession.requestData 
             let command = {
                 cmd = "Kommando"
                 requestId = "RekwestEidie"
@@ -71,7 +71,7 @@ let onNewWebSocket _ __ =
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        WebRoot = "webroot" 
+        WebRoot = "/home/uwe/projects/UwebServer/webroot" 
         //WebRoot = "C:\Users\urieg\Documents\Projekte\Commander\WebApp"
         Port=20000
         AllowOrigins = Some [| "http://localhost:8080" |]

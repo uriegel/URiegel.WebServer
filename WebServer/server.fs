@@ -68,7 +68,7 @@ let create (configuration: Configuration.Value) =
         printfn "Binding to local address: %s" <| configuration.LocalAddress.ToString ()
 
     printfn "Listening on port %d" configuration.Port
-    let result = IPV6ListenerFactory.create configuration.Port
+    let result = Ipv6Listener.Create configuration.Port
     let listener = result.Listener
     if not result.Ipv6 then 
         printfn "IPv6 or IPv6 dual mode not supported, switching to IPv4"

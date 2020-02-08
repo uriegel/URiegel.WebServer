@@ -5,8 +5,8 @@ open UrlQueryComponents
 type RequestSession = {
     url: string
     query: Lazy<Query>
-    asyncSendJson: Object->Async<unit>
-    asyncGetJson : Type->obj    
+    asyncSendJson: obj->Async<unit>
+    requestData: obj    
 }
 
 type WebSocketSession = {
