@@ -58,17 +58,16 @@ let asyncSendOption responseData =
             | Some _ -> 
                 let responseHeaders = 
                     match responseData.requestData.header.rawHeaders.TryFind "Access-Control-Request-Headers" with
-                    | Some value -> responseHeaders.Add("Access-Control-Request-Headers", value)
+                    | Some value -> responseHeaders.Add("Access-Control-Allow-Headers", value)
                     | None -> responseHeaders    
                 let responseHeaders = 
                     match responseData.requestData.header.rawHeaders.TryFind "Access-Control-Request-Method" with
-                    | Some value -> responseHeaders.Add("Access-Control-Request-Method", value)
+                    | Some value -> responseHeaders.Add("Access-Control-Allow-Method", value)
                     | None -> responseHeaders    
                 responseHeaders
             | None -> responseHeaders
         
-        //let bytes = createHeader responseData responseHeaders 204 "No Content" None
-        let bytes = createHeader responseData responseHeaders 200 "OK" None
+        let bytes = createHeader responseData responseHeaders 204 "No Content" None
         do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length)
     } 
 
