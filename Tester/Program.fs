@@ -22,7 +22,7 @@ printfn "Starting Test Server"
 
 let asyncRequest (requestSession: RequestSession) = 
     async {
-        match requestSession.query.Value.method with
+        match requestSession.query.Value.Method with
         | "runOperation" ->
             let jason = asyncGetJson<Input> requestSession.requestData 
             let id = jason.id
