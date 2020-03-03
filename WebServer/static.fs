@@ -38,6 +38,11 @@ let private checkFile (url: string) requestData =
         let relativePath = if Path.DirectorySeparatorChar <> '/' then unescapedUrl.Replace ('/', Path.DirectorySeparatorChar) else unescapedUrl
         relativePath.Substring 1
     let path = Path.Combine (requestData.configuration.WebRoot, relativePath)
+    let path = 
+        if Path.IsPathRooted path then
+            path
+        else
+            Path.Combine(Directory.GetCurrentDirectory(), path)
 
     if File.Exists path then 
         path

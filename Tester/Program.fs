@@ -62,8 +62,7 @@ let onNewWebSocket _ __ =
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        WebRoot = "/home/uwe/projects/UwebServer/webroot" 
-        //WebRoot = "C:\Users\urieg\Documents\Projekte\Commander\WebApp"
+        WebRoot = "webroot" 
         Port=20000
         AllowOrigins = Some [| "http://localhost:8080" |]
         onNewWebSocket = onNewWebSocket
