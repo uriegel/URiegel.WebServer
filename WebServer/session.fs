@@ -6,6 +6,7 @@ type RequestSession = {
     url: string
     query: Lazy<Query>
     asyncSendJson: obj->Async<unit>
+    asyncSendText: string->Async<unit>
     requestData: obj    
 }
 

@@ -164,14 +164,20 @@ let asyncSendStream responseData (stream: Stream) (contentType: string) lastModi
                     dataToSend <- false
     }
 
-let asyncSendText responseData = async {
-    do! asyncSendError responseData @"<title>CAESAR</title>
-<Style> 
-html {
-    font-family: sans-serif;
-}
-h1 {
-    font-weight: 100;
-}
-</Style>" "<h1>Datei nicht gefunden</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden.</p>" 404 "Not Found"
-} 
+let asyncSendText responseData (text: string) = 
+    async {
+        let bytes = Encoding.UTF8.GetBytes text
+        let mutable contentLength = bytes.Length
+        let headers = Map.empty.
+                        Add("Content-Length", contentLength.ToString ()).
+                        Add("Content-Type", "text/plain; charset=UTF-8").
+                        Add("Cache-Control", "no-cache,no-store")
+        let headers =
+            match responseData.requestData.header.contentEncoding.Value with
+            | ContentEncoding.Deflate -> headers.Add("Content-Encoding", "deflate")
+            | ContentEncoding.GZip -> headers.Add("Content-Encoding", "gzip")
+            | _ -> headers    
+
+        let bytes = createHeaderOk responseData headers (Some bytes)
+        do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length) 
+    }

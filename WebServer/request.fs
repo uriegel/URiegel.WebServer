@@ -32,6 +32,7 @@ let startRequesting headerResult configuration requestSession buffer =
                             url = header.url
                             query = responseData.query
                             asyncSendJson = Response.asyncSendJson responseData
+                            asyncSendText = Response.asyncSendText responseData
                             requestData = requestData
                         }
                     
