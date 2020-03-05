@@ -167,6 +167,20 @@ let asyncSendStream responseData (stream: Stream) (contentType: string) lastModi
 let asyncSendText responseData (text: string) = 
     async {
         let bytes = Encoding.UTF8.GetBytes text
+
+        use memStm = new MemoryStream ()
+        let streamToDeserialize = 
+            match responseData.requestData.header.contentEncoding.Value with
+            | ContentEncoding.Deflate -> new DeflateStream (memStm, CompressionMode.Compress, true) :> Stream
+            | ContentEncoding.GZip -> new GZipStream (memStm, CompressionMode.Compress, true) :> Stream
+            | _ -> memStm :> Stream
+
+        streamToDeserialize.Write (bytes, 0, bytes.Length)
+        if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None then 
+            streamToDeserialize.Close ()
+
+        memStm.Capacity <- int memStm.Length
+        let bytes = memStm.GetBuffer ()
         let mutable contentLength = bytes.Length
         let headers = Map.empty.
                         Add("Content-Length", contentLength.ToString ()).
