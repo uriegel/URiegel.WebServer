@@ -4,3 +4,5 @@ WebServer/bin
 WebServer/obj
 /packages/System.ValueTuple.4.3.1
 .ionide/symbolCache.db
+OAuth2/bin
+OAuth2/obj

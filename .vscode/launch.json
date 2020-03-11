@@ -16,6 +16,17 @@
             "console": "internalConsole"
         },
         {
+            "name": ".NET Core Launch OAuth2 (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/OAuth2/bin/Debug/netcoreapp3.1/OAuth2.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },        
+        {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach",

@@ -23,6 +23,7 @@
   	</PropertyGroup>	  
 
 	<ItemGroup>
+		<Compile Include="String.fs" />
 		<Compile Include="mime-types.fs" />
 		<Compile Include="session.fs" />
 		<Compile Include="configuration.fs" />
