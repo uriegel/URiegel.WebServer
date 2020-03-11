@@ -29,11 +29,12 @@ let startRequesting headerResult configuration requestSession buffer =
                 else
                     if requestData.header.method <> Method.Options then
                         let! processed = configuration.asyncRequest {
-                            url = header.url
-                            query = responseData.query
-                            asyncSendJson = Response.asyncSendJson responseData
-                            asyncSendText = Response.asyncSendText responseData
-                            requestData = requestData
+                            Url = header.url
+                            Method = header.method
+                            Query = responseData.query
+                            AsyncSendJson = Response.asyncSendJson responseData
+                            AsyncSendText = Response.asyncSendText responseData
+                            RequestData = requestData
                         }
                     
                         if not processed then

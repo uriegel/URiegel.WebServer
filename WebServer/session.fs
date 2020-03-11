@@ -2,12 +2,19 @@ module Session
 open System
 open UrlQueryComponents
 
+type Method =
+    Get = 0 
+    | Post = 1
+    | Head = 2
+    | Options = 3
+
 type RequestSession = {
-    url: string
-    query: Lazy<Query>
-    asyncSendJson: obj->Async<unit>
-    asyncSendText: string->Async<unit>
-    requestData: obj    
+    Url: string
+    Method: Method
+    Query: Lazy<Query>
+    AsyncSendJson: obj->Async<unit>
+    AsyncSendText: string->Async<unit>
+    RequestData: obj    
 }
 
 type WebSocketSession = {

@@ -22,9 +22,9 @@ printfn "Starting Test Server"
 
 let asyncRequest (requestSession: RequestSession) = 
     async {
-        match requestSession.query.Value.Method with
+        match requestSession.Query.Value.Request with
         | "runOperation" ->
-            let jason = asyncGetJson<Input> requestSession.requestData 
+            let jason = asyncGetJson<Input> requestSession.RequestData 
             let id = jason.id
             let command = {
                 Cmd = "Kommando"
@@ -32,10 +32,10 @@ let asyncRequest (requestSession: RequestSession) =
                 Count= 45L
             }
             //System.Threading.Thread.Sleep 3
-            do! requestSession.asyncSendJson (command :> obj)
+            do! requestSession.AsyncSendJson (command :> obj)
             return true
         | "affe" ->
-            let test = requestSession.query.Value
+            let test = requestSession.Query.Value
             let param1 = test.Query "param1" 
             let param2 = test.Query "param2"
             let param3 = test.Query "param41"
@@ -46,7 +46,7 @@ let asyncRequest (requestSession: RequestSession) =
                 Count= 45L
             }
             //System.Threading.Thread.Sleep 3
-            do! requestSession.asyncSendJson (command :> obj)
+            do! requestSession.AsyncSendJson (command :> obj)
             return true
         | _ -> return false
     }

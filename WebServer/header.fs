@@ -1,12 +1,7 @@
 module Header
-open RequestTypes
 open System
-
-type Method =
-    Get = 0 
-    | Post = 1
-    | Head = 2
-    | Options = 3
+open RequestTypes
+open Session
 
 type ContentEncoding = 
     None = 0

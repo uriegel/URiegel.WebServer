@@ -6,6 +6,7 @@ open System.Text
 open Header
 open System.IO.Compression
 open ResponseHeaders
+open Session
 
 let getAllowedOrigin (responseData: ResponseData) =
     match responseData.requestData.configuration.AllowOrigins with
