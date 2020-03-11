@@ -12,8 +12,10 @@ type RequestSession = {
     Url: string
     Method: Method
     Query: Lazy<Query>
+    GetText : unit->string
     AsyncSendJson: obj->Async<unit>
     AsyncSendText: string->Async<unit>
+    AsyncSendStatic: string->Async<unit>
     RequestData: obj    
 }
 

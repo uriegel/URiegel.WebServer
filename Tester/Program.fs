@@ -25,10 +25,10 @@ let asyncRequest (requestSession: RequestSession) =
         let request = requestSession.Query.Value
         match requestSession.Query.Value.Request with
         | "login" -> 
-            let data = asyncGetText requestSession.RequestData
+            let data = requestSession.GetText ()
             return false
         | "runOperation" ->
-            let jason = asyncGetJson<Input> requestSession.RequestData 
+            let jason = getJson<Input> requestSession 
             let id = jason.id
             let command = {
                 Cmd = "Kommando"

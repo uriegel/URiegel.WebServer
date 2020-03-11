@@ -145,16 +145,19 @@ let asyncRedirectDirectory url responseData = async {
         do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
 }
 
-let asyncServeStatic requestData = async {
+let rec asyncServeStaticUrl requestData url = async {
     let responseData = create requestData
-    let file = checkFile requestData.header.url requestData
+    let file = checkFile url requestData
     if file <> "" then  
         do! asyncSendFile file responseData
-    elif not (requestData.header.url.EndsWith "/") then
-        do! asyncRedirectDirectory (requestData.header.url + "/") responseData 
+    elif not (url.EndsWith "/") then
+        do! asyncServeStaticUrl requestData (url + "/")
     else
         do! asyncSendNotFound responseData
 }
+
+let asyncServeStatic requestData = 
+    asyncServeStaticUrl requestData requestData.header.url
 
 let asyncServeFavicon requestData favicon = async {
     let responseData = create requestData

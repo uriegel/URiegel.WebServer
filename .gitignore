@@ -6,3 +6,4 @@ WebServer/obj
 .ionide/symbolCache.db
 OAuth2/bin
 OAuth2/obj
+OAuth2/ClientId.fs

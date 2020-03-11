@@ -7,13 +7,8 @@ open Session
 open WebSocket
 open System.IO
 
-let asyncGetText (requestData: obj) = 
-    let requestDataValue = requestData :?> RequestData.RequestData
-    let buffer = requestDataValue.buffer
-    System.Text.Encoding.UTF8.GetString (buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
-
-let asyncGetJson<'T> (requestData: obj) = 
-    let requestDataValue = requestData :?> RequestData.RequestData
+let getJson<'T> (requestSession: RequestSession) = 
+    let requestDataValue = requestSession.RequestData :?> RequestData.RequestData
     let buffer = requestDataValue.buffer
     use memStm = new MemoryStream ( buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
     Json.deserializeStream<'T> memStm
@@ -33,12 +28,17 @@ let startRequesting headerResult configuration requestSession buffer =
                     do! asyncServeFavicon requestData configuration.favicon
                 else
                     if requestData.header.method <> Method.Options then
+                        let getText (requestData: RequestData.RequestData) () = 
+                            let buffer = requestData.buffer
+                            System.Text.Encoding.UTF8.GetString (buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
                         let! processed = configuration.asyncRequest {
                             Url = header.url
                             Method = header.method
                             Query = responseData.query
+                            GetText = getText requestData
                             AsyncSendJson = Response.asyncSendJson responseData
                             AsyncSendText = Response.asyncSendText responseData
+                            AsyncSendStatic = Static.asyncServeStaticUrl requestData
                             RequestData = requestData
                         }
                     
