@@ -7,6 +7,11 @@ open Session
 open WebSocket
 open System.IO
 
+let asyncGetText (requestData: obj) = 
+    let requestDataValue = requestData :?> RequestData.RequestData
+    let buffer = requestDataValue.buffer
+    System.Text.Encoding.UTF8.GetString (buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
+
 let asyncGetJson<'T> (requestData: obj) = 
     let requestDataValue = requestData :?> RequestData.RequestData
     let buffer = requestDataValue.buffer
