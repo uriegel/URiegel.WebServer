@@ -22,6 +22,9 @@ printfn "Starting Test Server"
 
 let asyncRequest (requestSession: RequestSession) = 
     async {
+        let request = requestSession.Query.Value
+        let test = request.Path 
+        let test2 = request.Request
         match requestSession.Query.Value.Request with
         | "runOperation" ->
             let jason = asyncGetJson<Input> requestSession.RequestData 
