@@ -25,6 +25,7 @@
 	<ItemGroup>
 		<Compile Include="String.fs" />
 		<Compile Include="mime-types.fs" />
+		<Compile Include="parameters.fs" />
 		<Compile Include="session.fs" />
 		<Compile Include="configuration.fs" />
 		<Compile Include="request-types.fs" />

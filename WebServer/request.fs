@@ -31,14 +31,36 @@ let startRequesting headerResult configuration requestSession buffer =
                         let getText (requestData: RequestData.RequestData) () = 
                             let buffer = requestData.buffer
                             System.Text.Encoding.UTF8.GetString (buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
+                        let getCookie (requestData: RequestData.RequestData) cookie = 
+                            match requestData.header.Header "Cookie" with
+                            | Some cookieString -> 
+                                let cookies = cookieString |> String.splitChar ';'
+                                match cookies |> Seq.tryFind (fun n -> n |> String.startsWith cookie) with
+                                | Some value -> 
+                                    let pos = value|> String.indexOfChar '='
+                                    match pos with
+                                    | Some pos -> Some (value |> String.substring (pos + 1))
+                                    | None -> None
+                                | None -> None
+                            | None -> None
+                        let addResponseHeader (requestData: RequestData.RequestData) name value =
+                            requestData.responseHeaders.[name] <- value
+                        let createSessionCookie requestData cookie =
+                            addResponseHeader requestData "Set-Cookie" <|sprintf "connect.sid=%s; HttpOnly" cookie // Path={sourceUrl}; 
+
                         let! processed = configuration.asyncRequest {
                             Url = header.url
                             Method = header.method
                             Query = responseData.query
+                            GetUrlRoot = fun () -> requestData.urlRoot.Value
                             GetText = getText requestData
+                            GetCookie = getCookie requestData
+                            AddResponseHeader = addResponseHeader requestData
+                            CreateSessionCookie = createSessionCookie requestData
                             AsyncSendJson = Response.asyncSendJson responseData
                             AsyncSendText = Response.asyncSendText responseData
                             AsyncSendStatic = Static.asyncServeStaticUrl requestData
+                            AsyncRedirect302 = Response.asyncRedirect302 requestData
                             RequestData = requestData
                         }
                     

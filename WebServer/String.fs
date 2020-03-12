@@ -6,3 +6,5 @@ let startsWith (testStr: string) (str: string) =
         str.StartsWith str
     else
         false
+
+let joinStr (sep: string) (strs: string seq) = String.Join (sep, strs)

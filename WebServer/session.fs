@@ -12,10 +12,15 @@ type RequestSession = {
     Url: string
     Method: Method
     Query: Lazy<Query>
-    GetText : unit->string
+    GetUrlRoot: unit->string
+    GetText: unit->string
+    GetCookie: string->string option
+    AddResponseHeader: string -> string -> unit
+    CreateSessionCookie: string -> unit
     AsyncSendJson: obj->Async<unit>
     AsyncSendText: string->Async<unit>
     AsyncSendStatic: string->Async<unit>
+    AsyncRedirect302: string->Async<unit>
     RequestData: obj    
 }
 

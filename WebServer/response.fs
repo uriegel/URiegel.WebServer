@@ -8,14 +8,18 @@ open System.IO.Compression
 open ResponseHeaders
 open Session
 
-let asyncRedirect302 url (requestData: obj) = async {
-    let requestDataValue = requestData :?> RequestData.RequestData
-    let responseData = create requestDataValue
-    let redirectHeaders = 
-        sprintf "%s 302 Found\r\nLocation: %s\r\nContent-Length: 0\r\n\r\n"
-            responseData.response.Value url 
-    let headerBytes = Encoding.UTF8.GetBytes redirectHeaders 
-    do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+let asyncRedirect302 (requestData: RequestData.RequestData) url = async {
+    let responseData = create requestData
+    let headerLines = 
+        requestData.responseHeaders
+        |> Seq.map (fun n -> sprintf "%s: %s" n.Key n.Value)
+
+    let payLoad = 
+        sprintf "%s 302 Found\r\nLocation: %s\r\nContent-Length: 0\r\n%s\r\n\r\n"
+            responseData.response.Value url (headerLines |> String.joinStr "\r\n")
+    
+    let payLoadBytes = Encoding.UTF8.GetBytes payLoad
+    do! responseData.requestData.session.networkStream.AsyncWrite (payLoadBytes, 0, payLoadBytes.Length)
 }
 
 let getAllowedOrigin (responseData: ResponseData) =
