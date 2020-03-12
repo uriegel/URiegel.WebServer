@@ -26,6 +26,23 @@ let asyncRequest (requestSession: RequestSession) =
             let result = Parameters.scan payload
             let urlBase = requestSession.GetUrlRoot ()
             let originalUrl = Uri.UnescapeDataString result.["state"]
+
+            let pad str = 
+                let len = str |> String.length 
+                str |> String.padRight (len + (4 - len % 4) % 4) '='
+
+
+            let jwt = Uri.UnescapeDataString result.["id_token"]              
+            let parts = jwt |> String.splitChar '.'
+
+            let clientIdBase64 = 
+                parts.[1]
+                |> pad
+                |> String.replaceChar '-' '+'
+                |> String.replaceChar '_' '/'  
+            let clientIdBytes = System.Convert.FromBase64String clientIdBase64
+            let clientId = System.Text.Encoding.UTF8.GetString clientIdBytes               
+
             requestSession.CreateSessionCookie <| (Guid.NewGuid ()).ToString ()
             do! requestSession.AsyncRedirect302 <| urlBase + originalUrl
             return true
