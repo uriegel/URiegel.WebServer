@@ -66,8 +66,10 @@ let onNewWebSocket _ __ =
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        WebRoot = "webroot" 
-        Port=20000
+        WebRoot = "/media/speicher/projekte/UwebServer/webroot" 
+        Port = 9865
+        TlsPort = 443
+        UseLetsEncrypt = true
         AllowOrigins = Some [| "http://localhost:8080" |]
         onNewWebSocket = onNewWebSocket
         asyncRequest = asyncRequest

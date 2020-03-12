@@ -7,3 +7,4 @@ WebServer/obj
 OAuth2/bin
 OAuth2/obj
 OAuth2/ClientId.fs
+WebServer/cert.pfx

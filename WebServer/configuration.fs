@@ -11,7 +11,8 @@ type Value = {
     WebRoot: string
     SocketTimeout: int
     Port: int
-    IsTlsEnabled: bool 
+    TlsPort: int
+    UseLetsEncrypt: bool 
     favicon: string
     AllowOrigins: string array option
     asyncRequest: RequestSession->Async<bool>
@@ -24,7 +25,8 @@ let createEmpty () = {
     WebRoot = ""
     SocketTimeout = 20000
     Port = 80
-    IsTlsEnabled = false
+    TlsPort = 443
+    UseLetsEncrypt = false
     favicon = ""
     AllowOrigins = None
     asyncRequest = fun _ -> Task.FromResult<bool>(false) |> Async.AwaitTask
@@ -36,6 +38,7 @@ let create configuration = {
         WebRoot = if configuration.WebRoot = "" then Directory.GetCurrentDirectory () else configuration.WebRoot
         SocketTimeout = if configuration.SocketTimeout = 0 then 20000 else configuration.SocketTimeout
         Port =  if configuration.Port = 0 then 80 else configuration.Port
+        TlsPort =  if configuration.TlsPort = 0 then 443 else configuration.TlsPort
         DomainName = if configuration.DomainName = "" then (Dns.GetHostEntry(Environment.MachineName)).HostName else configuration.DomainName
         AllowOrigins = configuration.AllowOrigins
 }

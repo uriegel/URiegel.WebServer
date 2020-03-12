@@ -6,6 +6,7 @@ open System.IO
 open System.Net.Sockets
 open System.Security.Authentication
 open System.Text
+open System.Net.Security
 
 let private close session fullClose =
     if fullClose then
@@ -78,10 +79,18 @@ let private startReceive session configuration  =
         else
             startReadBuffer result.buffer |> ignore
 
-let create tcpClient configuration =
+let create (tcpClient: TcpClient) configuration certificate =
+    let getNetworkStream () =
+        match certificate with
+        | Some certificate -> 
+            let tcpStream = tcpClient.GetStream ()
+            let tlsStream = new SslStream (tcpStream)
+            tlsStream.AuthenticateAsServer (certificate, false, SslProtocols.Tls12 ||| SslProtocols.Tls13, false)
+            tlsStream :> Stream
+        | None -> tcpClient.GetStream () :> Stream
     let session = {
         tcpClient = tcpClient
-        networkStream = tcpClient.GetStream ()
+        networkStream = getNetworkStream () 
         startReceive = startReceive
     }
     startReceive session configuration 

@@ -19,7 +19,7 @@ let create configuration header session buffer =
         header = header
         buffer = buffer
         session = session
-        urlRoot = Lazy<string>.Create <| fun () -> sprintf "http%s://%s" (if configuration.IsTlsEnabled then "s" else "") header.host.Value
+        urlRoot = Lazy<string>.Create <| fun () -> sprintf "http%s://%s" (if configuration.UseLetsEncrypt then "s" else "") header.host.Value
         responseHeaders = Dictionary<string, string>() 
     }
 
