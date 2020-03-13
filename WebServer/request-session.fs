@@ -65,7 +65,7 @@ let private startReadBuffer buffer action =
                 close buffer.session true
     } |> Async.StartImmediate
 
-let private startReceive session configuration  =
+let private startReceive session configuration redirectTls =
     let buffer = {
         session = session
         buffer = Array.zeroCreate 20000
@@ -75,7 +75,7 @@ let private startReceive session configuration  =
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
         if result.header.IsSome then
-            startRequesting result configuration session result.buffer
+            startRequesting result configuration session result.buffer redirectTls
         else
             startReadBuffer result.buffer |> ignore
 
@@ -93,4 +93,4 @@ let create (tcpClient: TcpClient) configuration certificate =
         networkStream = getNetworkStream () 
         startReceive = startReceive
     }
-    startReceive session configuration 
+    startReceive session configuration (configuration.UseLetsEncrypt && certificate.IsNone)

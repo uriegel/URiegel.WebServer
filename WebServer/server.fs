@@ -6,8 +6,6 @@ open ResponseData
 open Session
 open System.Security.Cryptography.X509Certificates
 
-// TODO: TLS
-
 // TODO: async nur bis Daten da, keine Verschachtelten async-Blöcke in der SocketSession
 // TODO: Asynchrones rekursives Einlesen, bis entweder read = 0 oder Header-EndIndex gesetzt
 
@@ -113,7 +111,6 @@ let create (configuration: Configuration.Value) =
     }
 
     // TODO: In Webserver, in letsencrypt mode don't call request in unsecure, redirect to 443 or serve acme
-    // TODO: New project: LetsEncrypt server to get or renew the certificate
     // TODO: Save certificate in CertificateStore of root
     // TODO: Redirection (Fritz.uriegel.de)
     // TODO: Redirect Reitbeteiligung to Reitbeteiligung/

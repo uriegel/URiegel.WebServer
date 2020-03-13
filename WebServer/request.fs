@@ -6,6 +6,7 @@ open Static
 open Session
 open WebSocket
 open System.IO
+open System.Text
 
 let getJson<'T> (requestSession: RequestSession) = 
     let requestDataValue = requestSession.RequestData :?> RequestData.RequestData
@@ -13,7 +14,19 @@ let getJson<'T> (requestSession: RequestSession) =
     use memStm = new MemoryStream ( buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
     Json.deserializeStream<'T> memStm
 
-let startRequesting headerResult configuration requestSession buffer =
+let private asyncTlsRedirect (requestData: RequestData.RequestData) = async {
+    let response = "<html><head>Moved permanently</head><body><h1>Moved permanently</h1>The specified resource moved permanently.</body</html>"
+    let responseBytes = Encoding.UTF8.GetBytes response
+    let redirectHeaders = 
+        sprintf "HTTP/1.1 301 Moved Permanently\r\nLocation: %s%s\r\nContent-Length: %d\r\n\r\n"
+            requestData.urlRoot.Value requestData.header.url responseBytes.Length
+    let headerBytes = Encoding.UTF8.GetBytes redirectHeaders 
+
+    do! requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+    do! requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
+}
+
+let startRequesting headerResult configuration requestSession buffer redirectTls =
     match initialize headerResult with
     | Some header ->
         let requestData = RequestData.create configuration header requestSession buffer
@@ -26,6 +39,9 @@ let startRequesting headerResult configuration requestSession buffer =
             | _ ->
                 if configuration.favicon <> "" && header.url = "/favicon.ico" then 
                     do! asyncServeFavicon requestData configuration.favicon
+                elif redirectTls then
+                    // TODO serve letsencrypt validation
+                    do! asyncTlsRedirect requestData
                 else
                     if requestData.header.method <> Method.Options then
                         let getText (requestData: RequestData.RequestData) () = 
@@ -69,7 +85,7 @@ let startRequesting headerResult configuration requestSession buffer =
                     else
                         let responseData = create requestData
                         do! asyncSendOption responseData
-                requestSession.startReceive requestSession configuration
+                requestSession.startReceive requestSession configuration redirectTls
         } |> Async.StartImmediate
     | None -> ()
  

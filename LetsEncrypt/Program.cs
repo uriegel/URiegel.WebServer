@@ -43,34 +43,33 @@ namespace LetsEncrypt
             var token = httpChallenge.Token;
 
             await File.WriteAllTextAsync("webroot/letsencrypt", keyAuthz);
-
-            var challenge = await httpChallenge.Validate();
-            Console.WriteLine($"Challenge: {challenge.Error}, {challenge.Status} {challenge.Validated}"); 
-
-            Thread.Sleep(5000);
-
-            challenge = await httpChallenge.Validate();
-            Console.WriteLine($"Challenge: {challenge.Error}, {challenge.Status} {challenge.Validated}"); 
-
-
             try {
-            var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
-            var cert = await order.Generate(new CsrInfo
-            {
-                CountryName = "DE",
-                State = "NRW",
-                Locality = "Cologne",
-                Organization = "URiegel",
-                OrganizationUnit = "Dev",
-                CommonName = "uriegel.de",
-            }, privateKey);
-            
-            var certPem = cert.ToPem();
-            var pfxBuilder = cert.ToPfx(privateKey);
-            var pfx = pfxBuilder.Build("uriegel.de", "uriegel");
+                var challenge = await httpChallenge.Validate();
+                Console.WriteLine($"Challenge: {challenge.Error}, {challenge.Status} {challenge.Validated}"); 
 
-            File.WriteAllBytes("zertifikat.pfx", pfx);
-            var test = 0;
+                Thread.Sleep(5000);
+
+                challenge = await httpChallenge.Validate();
+                Console.WriteLine($"Challenge: {challenge.Error}, {challenge.Status} {challenge.Validated}"); 
+
+
+                var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
+                var cert = await order.Generate(new CsrInfo
+                {
+                    CountryName = "DE",
+                    State = "NRW",
+                    Locality = "Cologne",
+                    Organization = "URiegel",
+                    OrganizationUnit = "Dev",
+                    CommonName = "uriegel.de",
+                }, privateKey);
+                
+                var certPem = cert.ToPem();
+                var pfxBuilder = cert.ToPfx(privateKey);
+                var pfx = pfxBuilder.Build("uriegel.de", "uriegel");
+
+                File.WriteAllBytes("zertifikat.pfx", pfx);
+                var test = 0;
             }
             catch (Exception e)
             {
