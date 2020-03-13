@@ -27,6 +27,17 @@
             "console": "internalConsole"
         },        
         {
+            "name": ".NET Core Launch LetsEncrypt (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/LetsEncrypt/bin/Debug/netcoreapp3.1/LetsEncrypt.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },        
+        {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach",
