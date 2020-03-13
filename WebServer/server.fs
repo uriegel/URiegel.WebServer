@@ -51,7 +51,8 @@ let private start (listener: TcpListener) (tlsListener: TcpListener option) (con
 
         match tlsListener with
         | Some tlsListener ->
-            let certificate = new X509Certificate2("/opt/cert.pfx", "uriegel")
+            //let certificate = new X509Certificate2("/opt/cert.pfx", "uriegel")
+            let certificate = new X509Certificate2("zertifikat.pfx", "uriegel")
             printfn "Using certificate: %O" certificate
             printfn "Starting HTTPS Listener..."
             tlsListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)    
@@ -110,5 +111,12 @@ let create (configuration: Configuration.Value) =
         stop = stop listener tlsListener
         configuration = configuration
     }
+
+    // TODO: In Webserver, in letsencrypt mode don't call request in unsecure, redirect to 443 or serve acme
+    // TODO: New project: LetsEncrypt server to get or renew the certificate
+    // TODO: Save certificate in CertificateStore of root
+    // TODO: Redirection (Fritz.uriegel.de)
+    // TODO: Redirect Reitbeteiligung to Reitbeteiligung/
+
     
 

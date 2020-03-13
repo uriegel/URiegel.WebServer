@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Certes;
 using Certes.Acme;
@@ -44,6 +45,13 @@ namespace LetsEncrypt
             await File.WriteAllTextAsync("webroot/letsencrypt", keyAuthz);
 
             var challenge = await httpChallenge.Validate();
+            Console.WriteLine($"Challenge: {challenge.Error}, {challenge.Status} {challenge.Validated}"); 
+
+            Thread.Sleep(5000);
+
+            challenge = await httpChallenge.Validate();
+            Console.WriteLine($"Challenge: {challenge.Error}, {challenge.Status} {challenge.Validated}"); 
+
 
             try {
             var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
@@ -52,7 +60,7 @@ namespace LetsEncrypt
                 CountryName = "DE",
                 State = "NRW",
                 Locality = "Cologne",
-                Organization = "URiegl",
+                Organization = "URiegel",
                 OrganizationUnit = "Dev",
                 CommonName = "uriegel.de",
             }, privateKey);
