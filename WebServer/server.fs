@@ -5,6 +5,7 @@ open System.Net.Sockets
 open ResponseData
 open Session
 open System.Security.Cryptography.X509Certificates
+open System.IO
 
 // TODO: async nur bis Daten da, keine Verschachtelten async-Blöcke in der SocketSession
 // TODO: Asynchrones rekursives Einlesen, bis entweder read = 0 oder Header-EndIndex gesetzt
@@ -49,8 +50,7 @@ let private start (listener: TcpListener) (tlsListener: TcpListener option) (con
 
         match tlsListener with
         | Some tlsListener ->
-            //let certificate = new X509Certificate2("/opt/cert.pfx", "uriegel")
-            let certificate = new X509Certificate2("zertifikat.pfx", "uriegel")
+            let certificate = new X509Certificate2 (Path.Combine ("/etc/letsencrypt-uweb/certificate.pfx"), "uriegel")
             printfn "Using certificate: %O" certificate
             printfn "Starting HTTPS Listener..."
             tlsListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)    
@@ -110,9 +110,8 @@ let create (configuration: Configuration.Value) =
         configuration = configuration
     }
 
-    // TODO: Save certificate in CertificateStore of root
     // TODO: Redirection (Fritz.uriegel.de)
     // TODO: Redirect Reitbeteiligung to Reitbeteiligung/
-
+    // TODO: TlsRedirect -> domain name (localhost -> domain)
     
 

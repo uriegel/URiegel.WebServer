@@ -16,7 +16,7 @@ let getJson<'T> (requestSession: RequestSession) =
 
 let private asyncValidateLetsEncrypt (responseData: ResponseData) = async {
     let token = File.ReadAllText("/etc/letsencrypt-uweb/token")
-    printfn "Validateing LetsEncrypt token : %s" token
+    printfn "Validating LetsEncrypt token : %s" token
     do! asyncSendText responseData token
 }   
 
