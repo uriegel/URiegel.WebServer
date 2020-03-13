@@ -110,6 +110,8 @@ let create (configuration: Configuration.Value) =
         configuration = configuration
     }
 
+    // TODO: Password in secret, probe fallback uriegel
+    // TODO: validate for all authorizations till valid
     // TODO: Redirection (Fritz.uriegel.de)
     // TODO: Redirect Reitbeteiligung to Reitbeteiligung/
     // TODO: TlsRedirect -> domain name (localhost -> domain)
