@@ -14,6 +14,12 @@ let getJson<'T> (requestSession: RequestSession) =
     use memStm = new MemoryStream ( buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
     Json.deserializeStream<'T> memStm
 
+let private asyncValidateLetsEncrypt (responseData: ResponseData) = async {
+    let token = File.ReadAllText("/etc/letsencrypt-uweb/token")
+    printfn "Validateing LetsEncrypt token : %s" token
+    do! asyncSendText responseData token
+}   
+
 let private asyncTlsRedirect (requestData: RequestData.RequestData) = async {
     let response = "<html><head>Moved permanently</head><body><h1>Moved permanently</h1>The specified resource moved permanently.</body</html>"
     let responseBytes = Encoding.UTF8.GetBytes response
@@ -40,8 +46,10 @@ let startRequesting headerResult configuration requestSession buffer redirectTls
                 if configuration.favicon <> "" && header.url = "/favicon.ico" then 
                     do! asyncServeFavicon requestData configuration.favicon
                 elif redirectTls then
-                    // TODO serve letsencrypt validation
-                    do! asyncTlsRedirect requestData
+                    if header.url |> String.startsWith "/.well-known/acme-challenge" then
+                        do! asyncValidateLetsEncrypt responseData
+                    else
+                        do! asyncTlsRedirect requestData
                 else
                     if requestData.header.method <> Method.Options then
                         let getText (requestData: RequestData.RequestData) () = 

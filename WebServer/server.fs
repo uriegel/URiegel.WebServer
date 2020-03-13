@@ -110,7 +110,6 @@ let create (configuration: Configuration.Value) =
         configuration = configuration
     }
 
-    // TODO: In Webserver, in letsencrypt mode don't call request in unsecure, redirect to 443 or serve acme
     // TODO: Save certificate in CertificateStore of root
     // TODO: Redirection (Fritz.uriegel.de)
     // TODO: Redirect Reitbeteiligung to Reitbeteiligung/

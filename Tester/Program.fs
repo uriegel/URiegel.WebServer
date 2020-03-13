@@ -26,14 +26,6 @@ printfn "Starting Test Server"
 let asyncRequest (requestSession: RequestSession) = 
     async {
         let request = requestSession.Query.Value
-        
-        let p = 
-            match request.Path with
-            | Some p -> p
-            | None -> "nix"
-
-        printfn "%s %s" p requestSession.Query.Value.Request
-
         match requestSession.Query.Value.Request, request.Path with
         | "login", _ -> 
             let data = requestSession.GetText ()
@@ -62,12 +54,6 @@ let asyncRequest (requestSession: RequestSession) =
             }
             //System.Threading.Thread.Sleep 3
             do! requestSession.AsyncSendJson (command :> obj)
-            return true
-        | _, Some ".well-known/acme-challenge" ->
-            let token = File.ReadAllText("webroot/letsencrypt")
-            printfn "Gib token : %s Token: %s" request.Request token
-            //let token = token |> String.substring ((token |> String.indexOfChar '.').Value + 1)
-            do! requestSession.AsyncSendText token
             return true
         | _ -> return false
     }
