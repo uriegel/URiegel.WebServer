@@ -32,6 +32,7 @@ namespace LetsEncrypt
                 var pemKey = acme.AccountKey.ToPem();
                 await File.WriteAllTextAsync("account.txt", pemKey);
             }
+            //var order = await acme.NewOrder(new[] { "uriegel.de", "fritz.uriegel.de", "familie.uriegel.de" });
             var order = await acme.NewOrder(new[] { "uriegel.de" });
             //var order = await acme.NewOrder(new[] { "fritz.uriegel.de" });
 
@@ -44,8 +45,29 @@ namespace LetsEncrypt
 
             var challenge = await httpChallenge.Validate();
 
-            var test = 0;
+            try {
+            var privateKey = KeyFactory.NewKey(KeyAlgorithm.ES256);
+            var cert = await order.Generate(new CsrInfo
+            {
+                CountryName = "DE",
+                State = "NRW",
+                Locality = "Cologne",
+                Organization = "URiegl",
+                OrganizationUnit = "Dev",
+                CommonName = "uriegel.de",
+            }, privateKey);
             
+            var certPem = cert.ToPem();
+            var pfxBuilder = cert.ToPfx(privateKey);
+            var pfx = pfxBuilder.Build("uriegel.de", "uriegel");
+
+            File.WriteAllBytes("zertifikat.pfx", pfx);
+            var test = 0;
+            }
+            catch (Exception e)
+            {
+                var test = e;
+            }
         }
     }
 }

@@ -12,3 +12,4 @@ LetsEncrypt/obj
 LetsEncrypt/bin
 account.txt
 webroot/letsencrypt
+zertifikat.pfx
