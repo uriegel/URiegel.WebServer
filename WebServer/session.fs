@@ -2,15 +2,34 @@ module Session
 open System
 open UrlQueryComponents
 
+type ContentEncoding = 
+    None = 0
+    | Deflate = 1
+    | GZip = 2
+
 type Method =
     Get = 0 
     | Post = 1
     | Head = 2
     | Options = 3
 
+type Header = 
+    {
+        method: Method
+        url: string
+        http: string
+        http10: bool
+        rawHeaders: Map<string,string>
+        host: Lazy<string>
+        origin: Lazy<string option>
+        contentEncoding: Lazy<ContentEncoding>
+    }
+    member this.Header key = this.rawHeaders.TryFind key
+    
 type RequestSession = {
     Url: string
     Method: Method
+    Header: Header
     Query: Lazy<Query>
     GetUrlRoot: unit->string
     GetText: unit->string

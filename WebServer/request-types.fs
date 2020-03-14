@@ -2,14 +2,14 @@ module RequestTypes
 open System.IO
 open System.Net.Sockets
 
-type RequestSession = {
+type RawRequestSession = {
     tcpClient: TcpClient
     networkStream: Stream
-    startReceive: RequestSession->Configuration.Value->bool->unit
+    startReceive: RawRequestSession->Configuration.Value->bool->unit
 }
 
 type Buffer = {
-    session: RequestSession
+    session: RawRequestSession
     buffer: byte[]
     currentIndex: int
     read: int

@@ -1,14 +1,14 @@
 module RequestData
 open Configuration
-open Header
 open RequestTypes
 open System.Collections.Generic
+open Session
 
 type RequestData = {
     configuration: Value
     header: Header
     buffer: Buffer
-    session: RequestSession
+    session:  RawRequestSession
     urlRoot: Lazy<string>
     responseHeaders: Dictionary<string, string> 
 }

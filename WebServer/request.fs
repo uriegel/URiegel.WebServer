@@ -56,6 +56,7 @@ let private request (responseData: ResponseData) (request :RequestSession->Async
     request {
         Url = responseData.requestData.header.url
         Method = responseData.requestData.header.method
+        Header = responseData.requestData.header 
         Query = responseData.query
         GetUrlRoot = fun () -> responseData.requestData.urlRoot.Value
         GetText = getText ()

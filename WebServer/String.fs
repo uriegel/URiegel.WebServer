@@ -32,3 +32,26 @@ let length (str: string) =
         str.Length 
     else
         0
+
+let toUpper (str: string) =
+    if not (isNull str) then
+        str.ToUpper ()
+    else
+        ""
+
+let toLower (str: string) =
+    if not (isNull str) then
+        str.ToLower ()
+    else
+        ""
+let toUpperInvariant (str: string) =
+    if not (isNull str) then
+        str.ToUpperInvariant ()
+    else
+        ""
+
+let toLowerInvariant (str: string) =
+    if not (isNull str) then
+        str.ToLowerInvariant ()
+    else
+        ""

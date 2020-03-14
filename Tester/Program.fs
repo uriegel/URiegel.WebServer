@@ -79,12 +79,12 @@ let favicon = Request.useFavicon "/media/speicher/projekte/UwebServer/webroot/Uw
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        // Port = 9865
+        Port = 9865
         // TlsPort = 4434
         DomainName = "uriegel.de"
-        UseLetsEncrypt = true
+        //UseLetsEncrypt = true
         AllowOrigins = Some [| "http://localhost:8080" |]
-        Requests = [ request1; request2; reitbeteiligungRequest; testRequest; favicon ]
+        Requests = [ Proxy.proxyRequest; request1; request2; reitbeteiligungRequest; testRequest; favicon ]
 }
 
 try

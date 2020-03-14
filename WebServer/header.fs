@@ -3,24 +3,6 @@ open System
 open RequestTypes
 open Session
 
-type ContentEncoding = 
-    None = 0
-    | Deflate = 1
-    | GZip = 2
-
-type Header = 
-    {
-        method: Method
-        url: string
-        http: string
-        http10: bool
-        rawHeaders: Map<string,string>
-        host: Lazy<string>
-        origin: Lazy<string option>
-        contentEncoding: Lazy<ContentEncoding>
-    }
-    member this.Header key = this.rawHeaders.TryFind key
-
 let initialize headerResult = 
     match headerResult.header with
     | Some header ->
