@@ -15,8 +15,8 @@ type Value = {
     UseLetsEncrypt: bool 
     favicon: string
     AllowOrigins: string array option
-    asyncRequest: RequestSession->Async<bool>
-    onNewWebSocket: string->WebSocketSession->WebSocketCallback
+    RawRequests: (RequestSession->Async<bool>) list
+    Requests: (RequestSession->Async<bool>) list
 }
 
 let createEmpty () = {
@@ -29,8 +29,8 @@ let createEmpty () = {
     UseLetsEncrypt = false
     favicon = ""
     AllowOrigins = None
-    asyncRequest = fun _ -> Task.FromResult<bool>(false) |> Async.AwaitTask
-    onNewWebSocket = fun _ __ -> { id = ""; onClose = fun _ -> () }
+    RawRequests = []
+    Requests = []
 }
 
 let create configuration = {

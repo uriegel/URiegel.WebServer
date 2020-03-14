@@ -4,6 +4,35 @@ open Session
 open Request
 open System.IO
 
+
+
+
+
+let aufgabe a b = 
+    printfn "Vergleiche %d %d" a b
+    a = b
+
+let aufgaben = [ aufgabe 1 ; aufgabe 2; aufgabe 3; aufgabe 4 ]
+
+let rec arbeite a (aufgaben: (int->bool) list) =
+    let rec arbeite (aufgaben: (int->bool) list) =
+        let rest = 
+            match aufgaben with
+            | head :: tail -> 
+                if head a then
+                    []
+                else 
+                    tail
+            | [] -> []
+        match rest with
+        | [] -> true
+        | _ -> arbeite rest
+
+    arbeite aufgaben |> ignore
+
+arbeite 5 aufgaben
+
+
 type Command = {
     Cmd: string
     RequestId: string
@@ -23,30 +52,13 @@ System.IO.Directory.SetCurrentDirectory "/media/speicher/projekte/UwebServer"
 
 printfn "Starting Test Server"
 
-let asyncRequest (requestSession: RequestSession) = 
+let request1 (requestSession: RequestSession) =
     async {
         let request = requestSession.Query.Value
-        match requestSession.Query.Value.Request, request.Path with
-        | "login", _ -> 
-            let data = requestSession.GetText ()
-            return false
-        | "runOperation", _ ->
+        match requestSession.Query.Value.Request with
+        | "runOperation" ->
             let jason = getJson<Input> requestSession 
             let id = jason.id
-            let command = {
-                Cmd = "Kommando"
-                RequestId = "RekwestEidie"
-                Count= 45L
-            }
-            //System.Threading.Thread.Sleep 3
-            do! requestSession.AsyncSendJson (command :> obj)
-            return true
-        | "affe", _ ->
-            let test = requestSession.Query.Value
-            let param1 = test.Query "param1" 
-            let param2 = test.Query "param2"
-            let param3 = test.Query "param41"
-
             let command = {
                 Cmd = "Kommando"
                 RequestId = "RekwestEidie"
@@ -58,13 +70,35 @@ let asyncRequest (requestSession: RequestSession) =
         | _ -> return false
     }
 
-let onWebSocketClose _ =
-    printfn "%s" "gekloßt"
-    
-let onNewWebSocket _ __ = 
-    {
-        id = ""
-        onClose = onWebSocketClose
+let request2 (requestSession: RequestSession) =
+    async {
+        let request = requestSession.Query.Value
+        match requestSession.Query.Value.Request with
+        | "affe" ->
+            let test = requestSession.Query.Value
+            let param1 = test.Query "param1" 
+            let param2 = test.Query "param2"
+            let param3 = test.Query "param41"
+
+            let command = {
+                Cmd = "Kommando2"
+                RequestId = "RekwestEidie"
+                Count= 45L
+            }
+            //System.Threading.Thread.Sleep 3
+            do! requestSession.AsyncSendJson (command :> obj)
+            return true
+        | _ -> return false
+    }
+
+let asyncRequest (requestSession: RequestSession) = 
+    async {
+        let request = requestSession.Query.Value
+        match requestSession.Query.Value.Request, request.Path with
+        | "login", _ -> 
+            let data = requestSession.GetText ()
+            return false
+        | _ -> return false
     }
 
 let configuration = Configuration.create {
@@ -75,8 +109,7 @@ let configuration = Configuration.create {
         DomainName = "uriegel.de"
         UseLetsEncrypt = true
         AllowOrigins = Some [| "http://localhost:8080" |]
-        onNewWebSocket = onNewWebSocket
-        asyncRequest = asyncRequest
+        Requests = [ request1; request2 ]
         favicon = "Uwe.jpg"
 }
 

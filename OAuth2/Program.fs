@@ -54,22 +54,12 @@ let asyncRequest (requestSession: RequestSession) =
                 return true
     }
 
-let onWebSocketClose _ =
-    printfn "%s" "gekloßt"
-    
-let onNewWebSocket _ __ = 
-    {
-        id = ""
-        onClose = onWebSocketClose
-    }
-
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
         WebRoot = "webroot" 
         Port=20000
         AllowOrigins = Some [| "http://localhost:8080" |]
-        onNewWebSocket = onNewWebSocket
-        asyncRequest = asyncRequest
+        //asyncRequest = asyncRequest
         favicon = "Uwe.jpg"
 }
 try 

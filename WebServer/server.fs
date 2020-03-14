@@ -112,5 +112,6 @@ let create (configuration: Configuration.Value) =
 
     // TODO: ReverseProxy (Fritz.uriegel.de)
     // TODO: Password in secret, probe fallback uriegel
+    // TODO: WebSockets as Plugin
     
 
