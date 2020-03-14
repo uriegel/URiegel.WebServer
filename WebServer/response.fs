@@ -34,21 +34,14 @@ let getAllowedOrigin (responseData: ResponseData) =
         | _ -> None
 
 let createHeader responseData (header: Map<string,string>) status statusDescription (payload: byte[] option) = 
+    let responseHeaders = ResponseHeaders.initialize header "" None "" false
     let responseHeaders = 
-        let header =
-            if not <| header.ContainsKey "Content-Length" then
-                header.Add("Connection", "close").
-                    Add("Date", DateTime.Now.ToUniversalTime().ToString "R").
-                    Add("Server", "UR Web Server")
-            else
-                header
-
         match getAllowedOrigin responseData with
-        | Some originToAllow -> header.Add("Access-Control-Allow-Origin", originToAllow)
-        | None -> header
+        | Some originToAllow -> responseHeaders.Add("Access-Control-Allow-Origin", originToAllow)
+        | None -> responseHeaders
 
-        // if (server.Configuration.XFrameOptions != XFrameOptions.NotSet)
-        //     headers["X-Frame-Options"] = server.Configuration.XFrameOptions.ToString();
+    // if (server.Configuration.XFrameOptions != XFrameOptions.NotSet)
+    //     headers["X-Frame-Options"] = server.Configuration.XFrameOptions.ToString();
 
     let headerLines = responseHeaders |> Seq.map (fun n -> sprintf "%s: %s" n.Key n.Value)
     let headerString = sprintf "%s %d %s\r\n%s\r\n\r\n" responseData.response.Value status statusDescription <| String.Join ("\r\n", headerLines) 
@@ -132,6 +125,37 @@ let asyncSendJson responseData json =
         do! asyncSendJsonBytes responseData <| memStm.GetBuffer ()
     }
 
+let asyncCopyStream (source: Stream) (target: Stream) bufferSize = async {
+    let buffer = Array.zeroCreate bufferSize
+    
+    let rec copy () = async {
+        let! read = source.AsyncRead (buffer, 0, buffer.Length)
+        do! target.AsyncWrite (buffer, 0, read)
+        match read with
+        | 0 -> ()
+        | _ -> do! copy ()
+    }
+    do! copy ()
+}   
+
+let asyncSendRaw responseData status description stream = 
+    async {
+        let headers = 
+            responseData.requestData.responseHeaders
+            |> Seq.map (|KeyValue|)
+            |> Map.ofSeq
+
+        let bytes = createHeader responseData headers status description None
+
+
+        let affe = System.Text.Encoding.UTF8.GetString bytes
+
+
+        do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length) 
+        do! asyncCopyStream stream responseData.requestData.session.networkStream 20000
+        responseData.requestData.session.networkStream.Close ()
+    }
+
 let asyncSendStream responseData (stream: Stream) (contentType: string) lastModified = 
     async {
         let mutable headers = Map.empty
@@ -157,7 +181,7 @@ let asyncSendStream responseData (stream: Stream) (contentType: string) lastModi
             
             streamToSend <- ms
 
-        headers <- initialize headers contentType (int streamToSend.Length) lastModified false
+        headers <- initialize headers contentType (Some (int streamToSend.Length)) lastModified false
 
         if contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase) 
             || contentType.StartsWith ("text/css", StringComparison.CurrentCultureIgnoreCase)

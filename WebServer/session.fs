@@ -1,6 +1,7 @@
 module Session
 open System
 open UrlQueryComponents
+open System.IO
 
 type ContentEncoding = 
     None = 0
@@ -33,9 +34,11 @@ type RequestSession = {
     Query: Lazy<Query>
     GetUrlRoot: unit->string
     GetText: unit->string
+    GetBytes: unit->byte array
     GetCookie: string->string option
     AddResponseHeader: string -> string -> unit
     CreateSessionCookie: string -> unit
+    AsyncSendRaw: int->String->Stream->Async<unit>
     AsyncSendJson: obj->Async<unit>
     AsyncSendText: string->Async<unit>
     AsyncRedirect302: string->Async<unit>

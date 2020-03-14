@@ -110,7 +110,7 @@ let create (configuration: Configuration.Value) =
         configuration = configuration
     }
 
-    // TODO: ReverseProxy (Fritz.uriegel.de)
+    // TODO: GetInputStream till end
     // TODO: Password in secret, probe fallback uriegel
     // TODO: WebSockets as Plugin
     

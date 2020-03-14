@@ -1,6 +1,7 @@
 module Proxy
 open Session
 open System.Net
+open System
 
 let (|Int|_|) (str:string) =
     match System.Int32.TryParse str with
@@ -13,12 +14,12 @@ let proxyRequest (requestSession: RequestSession) =
         match urlRoot |> String.contains "127.0.0.40" with
         | true -> 
 
-            let url = "http://192.168.178.1"
+            //let url = "http://192.168.178.1" + requestSession.Url
+            let url = "https://caesar2go.caseris.de" + requestSession.Url
 
             let request = requestSession.Query.Value
             let webRequest = WebRequest.Create url :?> HttpWebRequest
             webRequest.Method <- string requestSession.Method |> String.toUpperInvariant
-            //var body = Headers.Method == Method.POST ? Get() : null;
             for h in requestSession.Header.rawHeaders do
                 match h.Key |> String.toLowerInvariant with
                 | "accept" -> webRequest.Accept <- h.Value 
@@ -48,9 +49,6 @@ let proxyRequest (requestSession: RequestSession) =
             // if (addXForwardedUri)
             //     webRequest.Headers.Add($"X-Forwarded-URI: {CreateXForwarded()}");                    
 
-                // HttpWebResponse response = null;
-                // try
-                // {
                 //     webRequest.CertificateValidator(e =>
                 //     {
                 //         Logger.Current.Warning($"{Id} {e.Message}");
@@ -62,50 +60,38 @@ let proxyRequest (requestSession: RequestSession) =
                 //         return false;
                 //     });
                 //     response = (HttpWebResponse)await webRequest.GetResponseAsync();
-                // }
-                // catch (WebException we)
-                // {
-                //     if (we.Response == null)
-                //         throw we;
-                //     response = (HttpWebResponse)we.Response;
-                // }
-                let! response = webRequest.GetResponseAsync () |> Async.AwaitTask 
-                let httpResponse = response :?> HttpWebResponse
 
-                let strom = response.GetResponseStream ()
-                let responseHeaders = 
-                    response.Headers.AllKeys 
-                    |> Array.map (fun key -> sprintf "%s: %s" key response.Headers.[key])
-
-                ()
-
-                
-
-//     responseHeaders = responseHeaders.Where(n => !n.StartsWith("allow:", StringComparison.InvariantCultureIgnoreCase)
-//         && !n.StartsWith("connection:", StringComparison.InvariantCultureIgnoreCase));
-//     var headerString = string.Join("\r\n", responseHeaders) + "\r\n\r\n";
-//     var html = $"{HttpResponseString} {(int)response.StatusCode} {response.StatusDescription}\r\n" + headerString;
-//     var htmlBytes = Encoding.UTF8.GetBytes(html);
-//     await WriteAsync(htmlBytes, 0, htmlBytes.Length);
-//     await WriteStreamAsync(strom);
-//     return true;
-// }
-// catch (Exception e)
-// {
-//     Logger.Current.LowTrace(() => $"An error has occurred while redirecting: {e}");
-//     try
-//     {
-//         await SendExceptionAsync(e);
-//     }
-//     catch { }
-// 	return false;
-// }
-
-
+            match requestSession.Method with 
+            | Method.Post -> 
+                let bytes = requestSession.GetBytes ()
+                use! requestStream = webRequest.GetRequestStreamAsync () |> Async.AwaitTask
+                do! requestStream.AsyncWrite (bytes, 0, bytes.Length)
+            | _ -> ()
+            let response = 
+                match 
+                    webRequest.GetResponseAsync () |> Async.AwaitTask 
+                    |> Async.Catch
+                    |> Async.RunSynchronously 
+                    with
+                | Choice1Of2 res -> res
+                | Choice2Of2 ex -> 
+                    match ex with
+                    | :? WebException as we -> we.Response
+                    | :? AggregateException as ae -> 
+                        match ae.InnerException with
+                        | :? WebException as we -> we.Response
+                        | _ -> raise ex
+                    | _ -> raise ex
+            let httpResponse = response :?> HttpWebResponse
+            response.Headers.AllKeys 
+            |> Array.map (fun key -> key, response.Headers.[key])
+            //|> Array.filter (fun (k, v) -> System.String.Compare (k, "allow", true) <> 0 && System.String.Compare (k, "connection", true) <> 0)
+            |> Array.filter (fun (k, v) -> System.String.Compare (k, "allow", true) <> 0)
+            |> Array.iter (fun (k, v) -> requestSession.AddResponseHeader k v)                 
+            do! requestSession.AsyncSendRaw (int httpResponse.StatusCode) httpResponse.StatusDescription (response.GetResponseStream ())
             return true
         | false -> return false
     }
-
 
 //         case "range":
 //             try

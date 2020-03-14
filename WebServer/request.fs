@@ -36,6 +36,8 @@ let private request (responseData: ResponseData) (request :RequestSession->Async
         let buffer = responseData.requestData.buffer
         System.Text.Encoding.UTF8.GetString (buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
 
+    let getBytes () () = responseData.requestData.buffer.buffer
+
     let getCookie () cookie = 
         match responseData.requestData.header.Header "Cookie" with
         | Some cookieString -> 
@@ -59,10 +61,12 @@ let private request (responseData: ResponseData) (request :RequestSession->Async
         Header = responseData.requestData.header 
         Query = responseData.query
         GetUrlRoot = fun () -> responseData.requestData.urlRoot.Value
+        GetBytes = getBytes ()
         GetText = getText ()
         GetCookie = getCookie ()
         AddResponseHeader = addResponseHeader responseData.requestData
         CreateSessionCookie = createSessionCookie responseData.requestData
+        AsyncSendRaw = Response.asyncSendRaw responseData
         AsyncSendJson = Response.asyncSendJson responseData
         AsyncSendText = Response.asyncSendText responseData
         AsyncRedirect302 = Response.asyncRedirect302 responseData.requestData
