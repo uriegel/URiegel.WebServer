@@ -4,35 +4,6 @@ open Session
 open Request
 open System.IO
 
-
-
-
-
-let aufgabe a b = 
-    printfn "Vergleiche %d %d" a b
-    a = b
-
-let aufgaben = [ aufgabe 1 ; aufgabe 2; aufgabe 3; aufgabe 4 ]
-
-let rec arbeite a (aufgaben: (int->bool) list) =
-    let rec arbeite (aufgaben: (int->bool) list) =
-        let rest = 
-            match aufgaben with
-            | head :: tail -> 
-                if head a then
-                    []
-                else 
-                    tail
-            | [] -> []
-        match rest with
-        | [] -> true
-        | _ -> arbeite rest
-
-    arbeite aufgaben |> ignore
-
-arbeite 5 aufgaben
-
-
 type Command = {
     Cmd: string
     RequestId: string
@@ -101,20 +72,23 @@ let asyncRequest (requestSession: RequestSession) =
         | _ -> return false
     }
 
+let reitbeteiligungRequest = 
+    Request.useStatic "/media/speicher/projekte/UwebServer/webroot" "/Reitbeteiligung" 
+
+let testRequest = 
+    Request.useStatic "/media/speicher/projekte/UwebServer/webroot" "/test" 
+
+let favicon = Request.useFavicon "/media/speicher/projekte/UwebServer/webroot/Uwe.jpg"
+
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        WebRoot = "/media/speicher/projekte/UwebServer/webroot" 
         // Port = 9865
         // TlsPort = 4434
         DomainName = "uriegel.de"
         UseLetsEncrypt = true
         AllowOrigins = Some [| "http://localhost:8080" |]
-        Requests = [ request1; request2 ]
-        favicon = "Uwe.jpg"
+        Requests = [ request1; request2; reitbeteiligungRequest; testRequest; favicon ]
 }
-
-
-
 
 try
         // let rec getLinesBufferAt lines = 

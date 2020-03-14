@@ -56,11 +56,8 @@ let asyncRequest (requestSession: RequestSession) =
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        WebRoot = "webroot" 
         Port=20000
         AllowOrigins = Some [| "http://localhost:8080" |]
-        //asyncRequest = asyncRequest
-        favicon = "Uwe.jpg"
 }
 try 
     let server = Server.create configuration 

@@ -64,7 +64,6 @@ let private request (responseData: ResponseData) (request :RequestSession->Async
         CreateSessionCookie = createSessionCookie responseData.requestData
         AsyncSendJson = Response.asyncSendJson responseData
         AsyncSendText = Response.asyncSendText responseData
-        AsyncSendStatic = Static.asyncServeStaticUrl responseData.requestData
         AsyncRedirect302 = Response.asyncRedirect302 responseData.requestData
         RequestData = responseData.requestData
     }
@@ -94,9 +93,7 @@ let startRequesting headerResult configuration requestSession buffer redirectTls
         
         async {
             try
-                if configuration.favicon <> "" && header.url = "/favicon.ico" then 
-                    do! asyncServeFavicon requestData configuration.favicon
-                elif redirectTls then
+                if redirectTls then
                     if header.url |> String.startsWith "/.well-known/acme-challenge" then
                         do! asyncValidateLetsEncrypt responseData
                     else
@@ -107,7 +104,6 @@ let startRequesting headerResult configuration requestSession buffer redirectTls
                         if not processed then
                             do! asyncSendNotFound responseData                            
                     else
-                        let responseData = create requestData
                         do! asyncSendOption responseData
                 requestSession.startReceive requestSession configuration redirectTls
             with 
@@ -115,12 +111,28 @@ let startRequesting headerResult configuration requestSession buffer redirectTls
         } |> Async.StartImmediate
     | None -> ()
  
-let private serveStatic path (requestSession: RequestSession) = async {
-    match requestSession.Url |> String.startsWith path with
+let private serveStatic directory webPath (requestSession: RequestSession) = async {
+    match requestSession.Url |> String.startsWith webPath with
     | true -> 
-        do! asyncServeStatic (requestSession.RequestData :?> RequestData.RequestData)
+        do! asyncServeStatic directory (requestSession.RequestData :?> RequestData.RequestData)
         return true
     | _ -> return false
 }
 
-let createStatic path = serveStatic path
+let private asyncServeFavicon iconPath (requestSession: RequestSession) = async {
+    match requestSession.Url with
+    | "/favicon.ico" ->
+        let requestData = requestSession.RequestData :?> RequestData.RequestData
+        let responseData = create requestData
+        if File.Exists iconPath then
+            do! asyncSendFile iconPath responseData
+        else
+            do! asyncSendNotFound responseData
+        return true
+    | _ -> return false
+}
+
+let useStatic directory webPath = serveStatic directory webPath
+
+let useFavicon iconPath = asyncServeFavicon iconPath
+

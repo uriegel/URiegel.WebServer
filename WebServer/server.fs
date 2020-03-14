@@ -42,7 +42,7 @@ let rec startConnecting (listener: TcpListener) configuration (certificate: X509
 let private start (listener: TcpListener) (tlsListener: TcpListener option) (configuration: Configuration.Value) () = 
     try
         printfn "Starting HTTP Listener..."
-        // TODO: Ansonsten kann nach Beenden des Listeners für 2 min kein neuer gestartet werden!
+        // Ansonsten kann nach Beenden des Listeners für 2 min kein neuer gestartet werden!
         listener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)    
         listener.Start ()
         startConnecting listener configuration None

@@ -18,17 +18,16 @@ type StaticInfo = {
     isFile: bool
 }
 
-let private checkFile (url: string) requestData = 
-    let r = url.IndexOf '#'
-
+let private checkFile directory url = 
     let rawUrl = 
-        if r <> -1 then 
-            url.Substring (0, r)
-        else
-            url
+        match url |> String.indexOfChar '#' with
+        | Some pos -> url |> String.substring2 0 pos
+        | None -> url
 
-    let qm = rawUrl.IndexOf ('?')
-    let url = if qm <> -1 then rawUrl.Substring (0, qm) else rawUrl
+    let url = 
+        match rawUrl |> String.indexOfChar '?' with
+        | Some pos -> rawUrl |> String.substring2 0 pos
+        | None -> rawUrl
 
     let isDirectory = url.EndsWith "/"
 
@@ -37,7 +36,7 @@ let private checkFile (url: string) requestData =
     let relativePath = 
         let relativePath = if Path.DirectorySeparatorChar <> '/' then unescapedUrl.Replace ('/', Path.DirectorySeparatorChar) else unescapedUrl
         relativePath.Substring 1
-    let path = Path.Combine (requestData.configuration.WebRoot, relativePath)
+    let path = Path.Combine (directory, relativePath)
     let path = 
         if Path.IsPathRooted path then
             path
@@ -129,8 +128,8 @@ let asyncSendFile (file: string) responseData = async {
         do! asyncInternalSendFile file responseData
 }
 
-let asyncRedirectDirectory url responseData = async {
-    let path = checkFile url responseData.requestData
+let asyncRedirectDirectory directory url responseData = async {
+    let path = checkFile directory url
     if path = "" then
         do! asyncSendNotFound responseData
     elif responseData.requestData.header.host.Value <> "" then
@@ -145,27 +144,17 @@ let asyncRedirectDirectory url responseData = async {
         do! responseData.requestData.session.networkStream.AsyncWrite (responseBytes, 0, responseBytes.Length)
 }
 
-let rec asyncServeStaticUrl requestData url = async {
+let rec asyncServeStaticUrl directory requestData url = async {
     let responseData = create requestData
-    let file = checkFile url requestData
+    let file = checkFile directory url
     if file <> "" then  
         do! asyncSendFile file responseData
     elif not (url.EndsWith "/") then
-        do! asyncRedirectDirectory (url + "/") responseData
+        do! asyncRedirectDirectory directory (url + "/") responseData
     else
         do! asyncSendNotFound responseData
 }
 
-let asyncServeStatic requestData = 
-    asyncServeStaticUrl requestData requestData.header.url
+let asyncServeStatic directory requestData = 
+    asyncServeStaticUrl directory requestData requestData.header.url
 
-let asyncServeFavicon requestData favicon = async {
-    let responseData = create requestData
-    let file = checkFile ("/" + favicon) requestData
-    if file <> "" then  
-        do! asyncSendFile file responseData
-    elif not (requestData.header.url.EndsWith "/") then
-        do! asyncRedirectDirectory (requestData.header.url + "/") responseData 
-    else
-        do! asyncSendNotFound responseData
-}
