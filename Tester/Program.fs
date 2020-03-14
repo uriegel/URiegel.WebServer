@@ -1,8 +1,5 @@
-﻿open System.Runtime.Serialization
-open Configuration
-open Session
+﻿open Session
 open Request
-open System.IO
 
 type Command = {
     Cmd: string
