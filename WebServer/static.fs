@@ -151,7 +151,7 @@ let rec asyncServeStaticUrl requestData url = async {
     if file <> "" then  
         do! asyncSendFile file responseData
     elif not (url.EndsWith "/") then
-        do! asyncServeStaticUrl requestData (url + "/")
+        do! asyncRedirectDirectory (url + "/") responseData
     else
         do! asyncSendNotFound responseData
 }

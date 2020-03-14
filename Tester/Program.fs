@@ -72,6 +72,7 @@ let configuration = Configuration.create {
         WebRoot = "/media/speicher/projekte/UwebServer/webroot" 
         // Port = 9865
         // TlsPort = 4434
+        DomainName = "uriegel.de"
         UseLetsEncrypt = true
         AllowOrigins = Some [| "http://localhost:8080" |]
         onNewWebSocket = onNewWebSocket

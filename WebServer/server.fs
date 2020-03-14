@@ -111,8 +111,6 @@ let create (configuration: Configuration.Value) =
     }
 
     // TODO: ReverseProxy (Fritz.uriegel.de)
-    // TODO: Redirect Reitbeteiligung to Reitbeteiligung/
-    // TODO: TlsRedirect -> domain name (localhost -> domain)
     // TODO: Password in secret, probe fallback uriegel
     
 

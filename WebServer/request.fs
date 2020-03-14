@@ -25,7 +25,7 @@ let private asyncTlsRedirect (requestData: RequestData.RequestData) = async {
     let responseBytes = Encoding.UTF8.GetBytes response
     let redirectHeaders = 
         sprintf "HTTP/1.1 301 Moved Permanently\r\nLocation: %s%s\r\nContent-Length: %d\r\n\r\n"
-            requestData.urlRoot.Value requestData.header.url responseBytes.Length
+            ("https://" + requestData.configuration.DomainName) requestData.header.url responseBytes.Length
     let headerBytes = Encoding.UTF8.GetBytes redirectHeaders 
 
     do! requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
