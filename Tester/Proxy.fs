@@ -14,8 +14,8 @@ let proxyRequest (requestSession: RequestSession) =
         match urlRoot |> String.contains "127.0.0.40" with
         | true -> 
 
-            //let url = "http://192.168.178.1" + requestSession.Url
-            let url = "https://caesar2go.caseris.de" + requestSession.Url
+            let url = "http://192.168.178.1" + requestSession.Url
+            //let url = "https://caesar2go.caseris.de" + requestSession.Url
 
             let request = requestSession.Query.Value
             let webRequest = WebRequest.Create url :?> HttpWebRequest
@@ -64,6 +64,10 @@ let proxyRequest (requestSession: RequestSession) =
             match requestSession.Method with 
             | Method.Post -> 
                 let bytes = requestSession.GetBytes ()
+
+
+                let scheiße = System.Text.Encoding.UTF8.GetString(bytes);
+
                 use! requestStream = webRequest.GetRequestStreamAsync () |> Async.AwaitTask
                 do! requestStream.AsyncWrite (bytes, 0, bytes.Length)
             | _ -> ()

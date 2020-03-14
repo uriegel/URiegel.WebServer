@@ -36,7 +36,11 @@ let private request (responseData: ResponseData) (request :RequestSession->Async
         let buffer = responseData.requestData.buffer
         System.Text.Encoding.UTF8.GetString (buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
 
-    let getBytes () () = responseData.requestData.buffer.buffer
+    let getBytes () () = 
+        let buffer = responseData.requestData.buffer
+        let bytes = Array.zeroCreate (buffer.read - buffer.currentIndex)
+        System.Array.Copy(buffer.buffer, buffer.currentIndex, bytes, 0, bytes.Length)
+        bytes
 
     let getCookie () cookie = 
         match responseData.requestData.header.Header "Cookie" with
