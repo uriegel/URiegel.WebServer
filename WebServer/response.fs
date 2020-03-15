@@ -34,7 +34,7 @@ let getAllowedOrigin (responseData: ResponseData) =
         | _ -> None
 
 let createHeader responseData (header: Map<string,string>) status statusDescription (payload: byte[] option) = 
-    let responseHeaders = ResponseHeaders.initialize header "" None "" false
+    let responseHeaders = ResponseHeaders.initialize header "" None
     let responseHeaders = 
         match getAllowedOrigin responseData with
         | Some originToAllow -> responseHeaders.Add("Access-Control-Allow-Origin", originToAllow)
@@ -146,61 +146,9 @@ let asyncSendRaw responseData status description stream =
             |> Map.ofSeq
 
         let bytes = createHeader responseData headers status description None
-
-
-        let affe = System.Text.Encoding.UTF8.GetString bytes
-
-
         do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length) 
         do! asyncCopyStream stream responseData.requestData.session.networkStream 20000
         responseData.requestData.session.networkStream.Close ()
-    }
-
-let asyncSendStream responseData (stream: Stream) (contentType: string) lastModified = 
-    async {
-        let mutable headers = Map.empty
-        let mutable streamToSend = stream
-        if responseData.requestData.header.contentEncoding.Value <> ContentEncoding.None &&
-            (contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase)            
-            || contentType.StartsWith ("text/", StringComparison.CurrentCultureIgnoreCase)) then
-            
-            let ms = new MemoryStream ()
-            use compressedStream = 
-                match responseData.requestData.header.contentEncoding.Value with    
-                | ContentEncoding.Deflate ->
-                    headers <- headers.Add("Content-Encoding", "deflate") 
-                    new DeflateStream (ms, CompressionMode.Compress, true) :> Stream
-                | ContentEncoding.GZip ->
-                    headers <- headers.Add("Content-Encoding", "gzip")
-                    new GZipStream (ms, CompressionMode.Compress, true) :> Stream
-                | _ -> null
-
-            do! stream.CopyToAsync compressedStream |> Async.AwaitTask
-            compressedStream.Close();
-            ms.Position <- 0L 
-            
-            streamToSend <- ms
-
-        headers <- initialize headers contentType (Some (int streamToSend.Length)) lastModified false
-
-        if contentType.StartsWith ("application/javascript", StringComparison.CurrentCultureIgnoreCase) 
-            || contentType.StartsWith ("text/css", StringComparison.CurrentCultureIgnoreCase)
-            || contentType.StartsWith ("text/html", StringComparison.CurrentCultureIgnoreCase) then
-                headers <- headers.Add("Expires", DateTime.Now.ToUniversalTime().ToString "r")
-
-        let headerBytes = createHeaderOk responseData headers None
-        do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
-        
-        if responseData.requestData.header.method <> Method.Head then
-            let bytes = Array.zeroCreate 8192
-
-            let mutable dataToSend = true
-            while dataToSend do 
-                let! read = streamToSend.AsyncRead (bytes, 0, bytes.Length)
-                if read <> 0 then
-                    do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, read)
-                else
-                    dataToSend <- false
     }
 
 let asyncSendText responseData (text: string) = 
@@ -234,3 +182,21 @@ let asyncSendText responseData (text: string) =
         let bytes = createHeaderOk responseData headers (Some bytes)
         do! responseData.requestData.session.networkStream.AsyncWrite (bytes, 0, bytes.Length) 
     }
+
+let asyncSendNotFound responseData = async {
+    do! asyncSendError responseData @"<title>CAESAR</title>
+<Style> 
+html {
+    font-family: sans-serif;
+}
+h1 {
+    font-weight: 100;
+}
+</Style>" "<h1>Datei nicht gefunden</h1><p>Die angegebene Resource konnte auf dem Server nicht gefunden werden.</p>" 404 "Not Found"
+} 
+
+let asyncSend304 responseData = async {
+    let headerString = sprintf "%s 304 Not Modified\r\n\r\n" responseData.response.Value
+    let headerBytes = ASCIIEncoding.ASCII.GetBytes headerString
+    do! responseData.requestData.session.networkStream.AsyncWrite (headerBytes, 0, headerBytes.Length)
+}

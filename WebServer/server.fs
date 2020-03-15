@@ -115,3 +115,12 @@ let create (configuration: Configuration.Value) =
     // TODO: WebSockets as Plugin
     
 
+// Modularity:
+// parameters -> oauth
+
+// response:
+// asyncSendJsonBytes
+// asyncSendJson      -> useJson
+
+// request:
+// getJson         -> useJson

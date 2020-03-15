@@ -4,7 +4,6 @@ open System.Text
 open Header
 open Response
 open ResponseData
-open Static
 open Session
 open ActivePatterns
 
@@ -130,29 +129,4 @@ let startRequesting headerResult configuration requestSession buffer redirectTls
             | ex -> printfn "Exception in requesting: %O" ex
         } |> Async.StartImmediate
     | None -> ()
- 
-let private serveStatic directory webPath (requestSession: RequestSession) = async {
-    match requestSession.Url |> String.startsWith webPath with
-    | true -> 
-        do! asyncServeStatic directory (requestSession.RequestData :?> RequestData.RequestData)
-        return true
-    | _ -> return false
-}
-
-let private asyncServeFavicon iconPath (requestSession: RequestSession) = async {
-    match requestSession.Url with
-    | "/favicon.ico" ->
-        let requestData = requestSession.RequestData :?> RequestData.RequestData
-        let responseData = create requestData
-        if File.Exists iconPath then
-            do! asyncSendFile iconPath responseData
-        else
-            do! asyncSendNotFound responseData
-        return true
-    | _ -> return false
-}
-
-let useStatic directory webPath = serveStatic directory webPath
-
-let useFavicon iconPath = asyncServeFavicon iconPath
 
