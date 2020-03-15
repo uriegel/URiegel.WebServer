@@ -1,12 +1,8 @@
 module Proxy
+open System
 open Session
 open System.Net
-open System
-
-let (|Int|_|) (str:string) =
-    match System.Int32.TryParse str with
-    | true,int -> Some int
-    | _ -> None
+open ActivePatterns
 
 let proxyRequest (requestSession: RequestSession) =
     async {
@@ -15,7 +11,6 @@ let proxyRequest (requestSession: RequestSession) =
         | true -> 
 
             let url = "http://192.168.178.1" + requestSession.Url
-            //let url = "https://caesar2go.caseris.de" + requestSession.Url
 
             let request = requestSession.Query.Value
             let webRequest = WebRequest.Create url :?> HttpWebRequest
@@ -33,7 +28,7 @@ let proxyRequest (requestSession: RequestSession) =
                     let dt = System.DateTime.Parse (dts.Trim())
                     webRequest.IfModifiedSince <- dt
                 | "content-length" -> 
-                    match h.Value with
+                    match Some h.Value with
                     | Int value -> webRequest.ContentLength <- int64 value
                     | _ -> printf "Could not set Content-Length"
                 | "content-type" -> webRequest.ContentType <- h.Value
@@ -64,10 +59,6 @@ let proxyRequest (requestSession: RequestSession) =
             match requestSession.Method with 
             | Method.Post -> 
                 let bytes = requestSession.GetBytes ()
-
-
-                let scheiße = System.Text.Encoding.UTF8.GetString(bytes);
-
                 use! requestStream = webRequest.GetRequestStreamAsync () |> Async.AwaitTask
                 do! requestStream.AsyncWrite (bytes, 0, bytes.Length)
             | _ -> ()

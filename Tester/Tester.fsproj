@@ -24,7 +24,11 @@
       		<Name>WebServer</Name>
       		<Private>True</Private>
     	</ProjectReference>
-  	</ItemGroup>
+  	</ItemGroup>		
+
+	<ItemGroup>
+	  <PackageReference Include="FSharpTools" Version="2.2.1" />
+	</ItemGroup>
 
 
 </Project>

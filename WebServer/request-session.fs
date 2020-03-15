@@ -22,7 +22,7 @@ let private checkHeaders buffer =
     | true ->             
         let resultBuffer = {
             buffer with
-                currentIndex = index.Value - 1
+                currentIndex = index.Value + 1
         } 
         {
             header = Some (Encoding.ASCII.GetString (buffer.buffer, 0, index.Value - 1))

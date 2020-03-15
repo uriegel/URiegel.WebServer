@@ -1,11 +1,12 @@
 module Request
+open System.IO
+open System.Text
 open Header
 open Response
 open ResponseData
 open Static
 open Session
-open System.IO
-open System.Text
+open ActivePatterns
 
 let getJson<'T> (requestSession: RequestSession) = 
     let requestDataValue = requestSession.RequestData :?> RequestData.RequestData
@@ -37,8 +38,18 @@ let private request (responseData: ResponseData) (request :RequestSession->Async
         System.Text.Encoding.UTF8.GetString (buffer.buffer, buffer.currentIndex, buffer.read - buffer.currentIndex)
 
     let getBytes () () = 
+
+        let contentLength = 
+            match responseData.requestData.header.Header "Content-Length" with
+            | Int len -> len
+            | _ -> failwith "No content"
+
         let buffer = responseData.requestData.buffer
         let bytes = Array.zeroCreate (buffer.read - buffer.currentIndex)
+
+        if bytes.Length <> contentLength then
+            failwith "Buffer to small!!"
+
         System.Array.Copy(buffer.buffer, buffer.currentIndex, bytes, 0, bytes.Length)
         bytes
 
