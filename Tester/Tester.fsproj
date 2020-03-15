@@ -28,6 +28,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="FSharpTools" Version="2.2.1" />
+	  <PackageReference Include="UwebStatic" Version="1.0.0" />
 	</ItemGroup>
 
 

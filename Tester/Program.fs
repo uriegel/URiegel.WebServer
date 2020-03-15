@@ -69,14 +69,13 @@ let asyncRequest (requestSession: RequestSession) =
         | _ -> return false
     }
 
-// TODO:
-// let reitbeteiligungRequest = 
-//     Request.useStatic "/media/speicher/projekte/UwebServer/webroot" "/Reitbeteiligung" 
+let reitbeteiligungRequest = 
+    Static.useStatic "/media/speicher/projekte/UwebServer/webroot" "/Reitbeteiligung" 
 
-// let testRequest = 
-//     Request.useStatic "/media/speicher/projekte/UwebServer/webroot" "/test" 
+let testRequest = 
+    Static.useStatic "/media/speicher/projekte/UwebServer/webroot" "/test" 
 
-//let favicon = Request.useFavicon "/media/speicher/projekte/UwebServer/webroot/Uwe.jpg"
+let favicon = Static.useFavicon "/media/speicher/projekte/UwebServer/webroot/Uwe.jpg"
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
@@ -85,8 +84,7 @@ let configuration = Configuration.create {
         DomainName = "uriegel.de"
         //UseLetsEncrypt = true
         AllowOrigins = Some [| "http://localhost:8080" |]
-        //Requests = [ Proxy.proxyRequest; request1; request2; reitbeteiligungRequest; testRequest; favicon ]
-        Requests = [ Proxy.proxyRequest; request1; request2 ]
+        Requests = [ Proxy.proxyRequest; request1; request2; reitbeteiligungRequest; testRequest; favicon ]
 }
 
 try
