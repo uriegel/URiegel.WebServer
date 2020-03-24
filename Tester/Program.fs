@@ -12,7 +12,7 @@ type Input = {
     name: string
 }
 
-System.IO.Directory.SetCurrentDirectory "/media/speicher/projekte/UwebServer"
+System.IO.Directory.SetCurrentDirectory "/home/uwe/projekte/UwebServer"
 
 // TODO:
 // Testprogramm: TCPSender: send Header, dann Send Json
@@ -79,7 +79,7 @@ let favicon = Static.useFavicon "/media/speicher/projekte/UwebServer/webroot/Uwe
 
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
-        Port = 9865
+        Port = 8080
         // TlsPort = 4434
         DomainName = "uriegel.de"
         //UseLetsEncrypt = true

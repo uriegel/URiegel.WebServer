@@ -13,3 +13,6 @@ LetsEncrypt/bin
 account.txt
 webroot/letsencrypt
 zertifikat.pfx
+
+.fake
+.ionide

@@ -50,13 +50,16 @@ let private start (listener: TcpListener) (tlsListener: TcpListener option) (con
 
         match tlsListener with
         | Some tlsListener ->
-            let certificate = new X509Certificate2 (Path.Combine ("/etc/letsencrypt-uweb/certificate.pfx"), "uriegel")
-            printfn "Using certificate: %O" certificate
-            printfn "Starting HTTPS Listener..."
-            tlsListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)    
-            tlsListener.Start ()
-            startConnecting tlsListener configuration (Some certificate)
-            printfn "HTTPS Listener started"
+            try 
+                let certificate = new X509Certificate2 (Path.Combine ("/etc/letsencrypt-uweb/certificate.pfx"), "uriegel")
+                printfn "Using certificate: %O" certificate
+                printfn "Starting HTTPS Listener..."
+                tlsListener.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)    
+                tlsListener.Start ()
+                startConnecting tlsListener configuration (Some certificate)
+                printfn "HTTPS Listener started"
+            with
+            | e -> printfn "Could not start HTTPS Listener: %O" e
         | None -> ()
     with 
     | ex -> 
