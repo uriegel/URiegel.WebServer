@@ -48,9 +48,11 @@ let private start (listener: TcpListener) (tlsListener: TcpListener option) (con
         startConnecting listener configuration None
         printfn "HTTP Listener started"
 
-        match tlsListener with
+        match tlsListener with 
         | Some tlsListener ->
             try 
+                // let passwordFile = "/etc/letsencrypt-uweb/passwd"
+                // let passwd = File.ReadAllText passwordFile
                 let certificate = new X509Certificate2 (Path.Combine ("/etc/letsencrypt-uweb/certificate.pfx"), "uriegel")
                 printfn "Using certificate: %O" certificate
                 printfn "Starting HTTPS Listener..."
