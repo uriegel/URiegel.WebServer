@@ -85,6 +85,9 @@ let private request (responseData: ResponseData) (request :RequestSession->Async
         AsyncSendText = Response.asyncSendText responseData
         AsyncRedirect302 = Response.asyncRedirect302 responseData.requestData
         RequestData = responseData.requestData
+        HandsOff = fun () -> 
+            responseData.requestData.session.startReceive <- fun s c r -> ()
+            responseData.requestData.session.networkStream
     }
 
 let private asyncProbeRequests (responseData: ResponseData) (requests: (RequestSession->Async<bool>) list) = async {

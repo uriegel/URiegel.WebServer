@@ -43,6 +43,7 @@ type RequestSession = {
     AsyncSendText: string->Async<unit>
     AsyncRedirect302: string->Async<unit>
     RequestData: obj    
+    HandsOff: unit->Stream
 }
 
 

@@ -117,8 +117,7 @@ let create (configuration: Configuration.Value) =
 
     // TODO: GetInputStream till end
     // TODO: Password in secret, probe fallback uriegel
-    // TODO: WebSockets as Plugin
-    
+        
 
 // Modularity:
 // parameters -> oauth

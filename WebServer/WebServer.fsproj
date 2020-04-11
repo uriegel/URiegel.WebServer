@@ -4,9 +4,9 @@
     	<OutputType>dll</OutputType>
 		<AssemblyName>UwebServer</AssemblyName>
     	<TargetFramework>netcoreapp3.1</TargetFramework>
-		<Version>4.1.1</Version>
-		<FileVersion>4.1.1.0</FileVersion>
-		<AssemblyVersion>4.1.1.0</AssemblyVersion>
+		<Version>4.2.1</Version>
+		<FileVersion>4.2.1.0</FileVersion>
+		<AssemblyVersion>4.2.1.0</AssemblyVersion>
 		<Authors>Uwe Riegel</Authors>
     	<Company>Uwe Riegel</Company>		
 		<Description>Web Server written for .Net Core</Description>
@@ -36,19 +36,6 @@
 		<Compile Include="request-session.fs" />
 		<Compile Include="server.fs" />
   	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="mscorlib" />
-		<Reference Include="FSharp.Core">
-		<Name>FSharp.Core</Name>
-		<AssemblyName>FSharp.Core.dll</AssemblyName>
-		</Reference>
-		<Reference Include="System" />
-		<Reference Include="System.Core" />
-		<Reference Include="System.Numerics" />
-		<Reference Include="System.Runtime.Serialization" />
-		<Reference Include="System.Xml" />
-	</ItemGroup>
 
 	<ItemGroup>
     	<None Include="..\LICENSE">

@@ -5,7 +5,7 @@ open System.Net.Sockets
 type RawRequestSession = {
     tcpClient: TcpClient
     networkStream: Stream
-    startReceive: RawRequestSession->Configuration.Value->bool->unit
+    mutable startReceive: RawRequestSession->Configuration.Value->bool->unit
 }
 
 type Buffer = {

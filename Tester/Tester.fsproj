@@ -13,13 +13,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="System" />
-		<Reference Include="System.Core" />
-		<Reference Include="System.Numerics" />
-		<Reference Include="System.Runtime.Serialization" />
-  	</ItemGroup>		
-
-	<ItemGroup>
     	<ProjectReference Include="..\WebServer\WebServer.fsproj">
       		<Name>WebServer</Name>
       		<Private>True</Private>
