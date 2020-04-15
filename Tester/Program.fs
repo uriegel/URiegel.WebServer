@@ -12,7 +12,7 @@ type Input = {
     name: string
 }
 
-System.IO.Directory.SetCurrentDirectory "/home/uwe/projekte/UwebServer"
+System.IO.Directory.SetCurrentDirectory "/media/speicher/projekte/UwebServer"
 
 // TODO:
 // Testprogramm: TCPSender: send Header, dann Send Json
@@ -75,6 +75,9 @@ let reitbeteiligungRequest =
 let testRequest = 
     Static.useStatic "/media/speicher/projekte/UwebServer/webroot" "/test" 
 
+let razorRequest = 
+    Static.useStatic "/home/uwe" "/wwwroot" 
+
 let favicon = Static.useFavicon "/media/speicher/projekte/UwebServer/webroot/Uwe.jpg"
 
 let configuration = Configuration.create {
@@ -84,7 +87,7 @@ let configuration = Configuration.create {
         DomainName = "uriegel.de"
         //UseLetsEncrypt = true
         AllowOrigins = Some [| "http://localhost:8080" |]
-        Requests = [ Proxy.proxyRequest; request1; request2; reitbeteiligungRequest; testRequest; favicon ]
+        Requests = [ Proxy.proxyRequest; request1; request2; reitbeteiligungRequest; testRequest; razorRequest; favicon ]
 }
 
 try

@@ -14,7 +14,7 @@ let initialize (initialHeaders: Map<string, string>) contentType (contentLength:
     | Some length -> headers <- headers.Add ("Content-Length", length.ToString ())
     | None -> ()
 
-    if not (headers.ContainsKey ("Content-Length")) then
+    if not (headers.ContainsKey ("Connection")) && not (headers.ContainsKey ("Content-Length")) then
         headers <- headers.Add ("Connection", "close")
 
     headers
