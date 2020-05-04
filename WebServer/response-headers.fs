@@ -4,8 +4,7 @@ open System.Runtime.InteropServices
 
 let private server = sprintf "UwebServer %s" <| Environment.OSVersion.ToString ()
 
-
-let initialize (initialHeaders: Map<string, string>) contentType (contentLength: int option) =
+let initialize (initialHeaders: Map<string, string>) contentType (contentLength: int64 option) =
     let mutable headers = initialHeaders
     headers <- headers.Add("Server", server)
     headers <- headers.Add("Date", (DateTime.Now.ToUniversalTime ()).ToString "R")
