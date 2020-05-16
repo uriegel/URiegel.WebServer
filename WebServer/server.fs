@@ -29,15 +29,18 @@ let private onConnected tcpClient configuration (certificate: X509Certificate2 o
 let rec startConnecting (listener: TcpListener) configuration (certificate: X509Certificate2 option) = 
     async {
         try
+            printfn "Listening"
             let! client = listener.AcceptTcpClientAsync () |> Async.AwaitTask
+            printfn "Connecting..."
             //client.NoDelay <- true
             onConnected client configuration certificate
+            printfn "Connected: %s" (client.Client.RemoteEndPoint.ToString ())
             startConnecting listener configuration certificate
         with
         | :? SocketException as se when se.SocketErrorCode = SocketError.Interrupted 
             -> printfn "Stopping listening..."
         | ex -> printfn "Could not stop HTTP Listener: %s" <|ex.ToString () 
-    } |> Async.StartImmediate
+    } |> Async.Start
 
 let private start (listener: TcpListener) (tlsListener: TcpListener option) (configuration: Configuration.Value) () = 
     try

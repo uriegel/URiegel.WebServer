@@ -129,7 +129,7 @@ let startRequesting headerResult configuration requestSession buffer redirectTls
                         do! asyncSendOption responseData
                 requestSession.startReceive requestSession configuration redirectTls
             with 
-            | ex -> printfn "Exception in requesting: %O" ex
+            | ex -> printfn "Exception in requesting: %s %s" (requestSession.tcpClient.Client.RemoteEndPoint.ToString ()) ex.Message
         } |> Async.StartImmediate
     | None -> ()
 
