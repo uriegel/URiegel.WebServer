@@ -28,6 +28,12 @@ let private onConnected tcpClient configuration (certificate: X509Certificate2 o
 
 let rec startConnecting (listener: TcpListener) configuration (certificate: X509Certificate2 option) = 
     async {
+
+
+        // TODO 2 Errors:
+        // TODO 1.: When Connected -> fork new task: onConnected
+        // TODO |> Async.StartImmediate thats the problem: when reading 0 bytes -> endless loop and on calling thread -> new connefction not possible
+
         try
             printfn "Listening"
             let! client = listener.AcceptTcpClientAsync () |> Async.AwaitTask
