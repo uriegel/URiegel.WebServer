@@ -46,6 +46,7 @@ let private startReadBuffer buffer action =
                 }
                 action buffer
             else
+                // TODO: Here log socket closed
                 ()
         with 
             | :? SocketException as se when se.SocketErrorCode = SocketError.TimedOut -> 
