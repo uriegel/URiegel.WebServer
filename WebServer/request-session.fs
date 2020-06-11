@@ -37,7 +37,9 @@ let private checkHeaders buffer =
 let private startReadBuffer buffer action =
     async {
         try 
+            printfn "networkStream.AsyncRead"
             let! read = buffer.session.networkStream.AsyncRead (buffer.buffer, buffer.currentIndex, buffer.buffer.Length - buffer.currentIndex)
+            printfn "networkStream.AsyncRead: %d bytes" read
             if read <> 0 then
                 let buffer = {
                     buffer with
@@ -73,6 +75,7 @@ let private startReceive session configuration redirectTls =
         currentIndex = 0
         read = 0
     } 
+    printfn "startReceive"
     startReadBuffer buffer <|fun buffer -> 
         let result = checkHeaders buffer 
         if result.header.IsSome then

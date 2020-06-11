@@ -17,6 +17,7 @@ type Server = {
 }
 let private onConnected tcpClient configuration (certificate: X509Certificate2 option) = 
     try
+        printfn "onConnected"
         RequestSession.create tcpClient configuration certificate
     with
     | :? SocketException as se when se.NativeErrorCode = 10054
