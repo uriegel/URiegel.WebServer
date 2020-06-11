@@ -4,9 +4,9 @@
     	<OutputType>library</OutputType>
 		<AssemblyName>UwebServer</AssemblyName>
     	<TargetFramework>netcoreapp3.1</TargetFramework>
-		<Version>5.0.6</Version>
-		<FileVersion>5.0.6.0</FileVersion>
-		<AssemblyVersion>5.0.6.0</AssemblyVersion>
+		<Version>5.0.7</Version>
+		<FileVersion>5.0.7.0</FileVersion>
+		<AssemblyVersion>5.0.7.0</AssemblyVersion>
 		<Authors>Uwe Riegel</Authors>
     	<Company>Uwe Riegel</Company>		
 		<Description>Web Server written for .Net Core</Description>

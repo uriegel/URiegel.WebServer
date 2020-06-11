@@ -32,7 +32,7 @@ let rec startConnecting (listener: TcpListener) configuration (certificate: X509
 
 
         // TODO 2 Errors:
-        // TODO 1.: When Connected -> fork new task: onConnected
+        // TODO SOLVED 1.: When Connected -> fork new task: onConnected
         // TODO |> Async.StartImmediate thats the problem: when reading 0 bytes -> endless loop and on calling thread -> new connefction not possible
 
         try
@@ -40,7 +40,7 @@ let rec startConnecting (listener: TcpListener) configuration (certificate: X509
             let! client = listener.AcceptTcpClientAsync () |> Async.AwaitTask
             printfn "Connecting..."
             //client.NoDelay <- true
-            onConnected client configuration certificate
+            async { onConnected client configuration certificate } |> Async.Start
             printfn "Connected: %s" (client.Client.RemoteEndPoint.ToString ())
             startConnecting listener configuration certificate
         with
