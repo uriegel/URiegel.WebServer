@@ -2,7 +2,8 @@ module Proxy
 open System
 open Session
 open System.Net
-open ActivePatterns
+open FSharpTools.ActivePatterns
+open FSharpTools
 
 let proxyRequest (requestSession: RequestSession) =
     async {

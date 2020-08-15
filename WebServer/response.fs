@@ -7,6 +7,7 @@ open Header
 open System.IO.Compression
 open ResponseHeaders
 open Session
+open FSharpTools
 
 let asyncRedirect302 (requestData: RequestData.RequestData) url = async {
     let responseData = create requestData

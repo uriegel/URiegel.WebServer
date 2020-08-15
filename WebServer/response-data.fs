@@ -1,6 +1,6 @@
 module ResponseData
 open RequestData
-open UrlQueryComponents
+open FSharpTools.UrlQueryComponents
 
 type ResponseData =
     {

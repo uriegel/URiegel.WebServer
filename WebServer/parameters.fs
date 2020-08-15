@@ -1,4 +1,5 @@
 module Parameters
+open FSharpTools
 
 let scan payload = 
     payload 

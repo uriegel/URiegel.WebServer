@@ -5,7 +5,8 @@ open Header
 open Response
 open ResponseData
 open Session
-open ActivePatterns
+open FSharpTools.ActivePatterns
+open FSharpTools
 
 let getJson<'T> (requestSession: RequestSession) = 
     let requestDataValue = requestSession.RequestData :?> RequestData.RequestData

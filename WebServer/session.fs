@@ -1,6 +1,6 @@
 module Session
 open System
-open UrlQueryComponents
+open FSharpTools.UrlQueryComponents
 open System.IO
 
 type ContentEncoding = 

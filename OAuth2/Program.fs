@@ -1,6 +1,7 @@
 ﻿open System
 open Configuration
 open Session
+open FSharpTools
 
 // To include clientId:
 // create a source file clientid.fs (gitignore):
