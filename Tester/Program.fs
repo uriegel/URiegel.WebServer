@@ -8,11 +8,9 @@ type Command = {
 }
 
 type Input = {
-    id: string
-    name: string
+    Id: string
+    Name: string
 }
-
-System.IO.Directory.SetCurrentDirectory "/media/speicher/projekte/UwebServer"
 
 // TODO:
 // Testprogramm: TCPSender: send Header, dann Send Json
@@ -20,37 +18,19 @@ System.IO.Directory.SetCurrentDirectory "/media/speicher/projekte/UwebServer"
 
 printfn "Starting Test Server"
 
-let request1 (requestSession: RequestSession) =
+let request (requestSession: RequestSession) =
     async {
         let request = requestSession.Query.Value
         match requestSession.Query.Value.Request with
-        | "runOperation" ->
-            let jason = getJson<Input> requestSession 
-            let id = jason.id
-            let command = {
-                Cmd = "Kommando"
-                RequestId = "RekwestEidie"
-                Count= 45L
-            }
-            //System.Threading.Thread.Sleep 3
-            do! requestSession.AsyncSendJson (command :> obj)
-            return true
-        | _ -> return false
-    }
-
-let request2 (requestSession: RequestSession) =
-    async {
-        let request = requestSession.Query.Value
-        match requestSession.Query.Value.Request with
-        | "affe" ->
+        | "test" ->
             let test = requestSession.Query.Value
             let param1 = test.Query "param1" 
             let param2 = test.Query "param2"
             let param3 = test.Query "param41"
 
             let command = {
-                Cmd = "Kommando2"
-                RequestId = "RekwestEidie"
+                Cmd = "Command"
+                RequestId = "RequestIDValue"
                 Count= 45L
             }
             //System.Threading.Thread.Sleep 3
@@ -69,17 +49,6 @@ let asyncRequest (requestSession: RequestSession) =
         | _ -> return false
     }
 
-let reitbeteiligungRequest = 
-    Static.useStatic "/media/speicher/projekte/UwebServer/webroot" "/Reitbeteiligung" 
-
-let testRequest = 
-    Static.useStatic "/media/speicher/projekte/UwebServer/webroot" "/test" 
-
-let razorRequest = 
-    Static.useStatic "/home/uwe" "/wwwroot" 
-
-let favicon = Static.useFavicon "/media/speicher/projekte/UwebServer/webroot/Uwe.jpg"
-
 let configuration = Configuration.create {
     Configuration.createEmpty() with 
         Port = 8080
@@ -87,7 +56,7 @@ let configuration = Configuration.create {
         DomainName = "uriegel.de"
         //UseLetsEncrypt = true
         AllowOrigins = Some [| "http://localhost:8080" |]
-        Requests = [ Proxy.proxyRequest; request1; request2; reitbeteiligungRequest; testRequest; razorRequest; favicon ]
+        Requests = [ Proxy.proxyRequest; request ]
 }
 
 try
