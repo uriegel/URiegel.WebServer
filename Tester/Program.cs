@@ -7,7 +7,10 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            var server = new Server(new Settings());
+            var server = new Server(new Settings()
+            {
+                Port = 9865
+            });
 
             server.Start();
             Console.ReadLine();
