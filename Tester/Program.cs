@@ -7,8 +7,11 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            var class1 = new Class1();
-            Console.WriteLine("Hello World!");
+            var server = new Server(new Settings());
+
+            server.Start();
+            Console.ReadLine();
+            server.Stop();
         }
     }
 }
