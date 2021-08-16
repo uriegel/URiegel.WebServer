@@ -106,7 +106,7 @@ namespace UwebServer
             {
                 if (!IsStarted)
                     return;
-                //SocketSession.StartReceiving(this, tcpClient, isSecured);
+                SocketSession.StartReceiving(this, tcpClient, isSecured);
             }
             catch (SocketException se) when (se.NativeErrorCode == 10054)
             { }

@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 
 namespace UwebServer
 {
@@ -16,8 +17,9 @@ namespace UwebServer
         public bool TlsRedirect { get; set; }
         public int MinSizeForDeflate { get; set; } = 200;
         public TimeSpan SocketLifetime { get; set; }
-
         public SslProtocols TlsProtocols { get; set; } = SslProtocols.Tls13;
+        public bool CheckRevocation { get; set; }
+        public X509Certificate2 Certificate { get; set; }
 
         public Settings()
         {
@@ -36,6 +38,9 @@ IsTlsEnabled: {IsTlsEnabled}
 TlsRedirect: {TlsRedirect}
 MinSizeForDeflate: {MinSizeForDeflate}
 SocketLifetime: {SocketLifetime}
-TlsProtocols: {TlsProtocols}";
+TlsProtocols: {TlsProtocols}
+CheckRevocation: {CheckRevocation},
+Certificate: {Certificate}";
+
     }
 }
