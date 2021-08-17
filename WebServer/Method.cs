@@ -1,11 +1,11 @@
 namespace UwebServer
 {
-	enum Method
+	public enum Method
 	{
-		GET = 0,
-		POST = 1,
-		HEAD = 2,
-		UNDEFINED = 3,
+		UNDEFINED = 0,
+		GET = 1,
+		POST = 2,
+		HEAD = 3,
 		OPTIONS = 4
 	}
 }

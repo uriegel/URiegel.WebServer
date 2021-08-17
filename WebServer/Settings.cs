@@ -20,6 +20,7 @@ namespace UwebServer
         public SslProtocols TlsProtocols { get; set; } = SslProtocols.Tls13;
         public bool CheckRevocation { get; set; }
         public X509Certificate2 Certificate { get; set; }
+        public Route[] Routes { get; set; }
 
         public Settings()
         {

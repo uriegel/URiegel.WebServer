@@ -146,6 +146,14 @@ namespace UwebServer
 
 				// if (Headers.Method == Method.OPTIONS)
                 //     return ServeOptions();
+                foreach (var route in Server.Settings.Routes)
+                {
+                    if (route.Method != Method.UNDEFINED && route.Method != Headers.Method)
+                        continue;
+                    if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
+                        continue;
+                    route.Process();
+                }
 
                 return true;
             }
