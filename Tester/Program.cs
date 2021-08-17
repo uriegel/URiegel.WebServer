@@ -3,31 +3,23 @@ using System.Threading.Tasks;
 using UwebServer;
 using UwebServer.Routes;
 
-var route1 = new TestRoute()
+var routeRequests = new Static()
 {
     Method = Method.GET,
-    Path = "/test"
+    Path = "/requests",
+    FilePath = "webroot/Requests"
+    // url: http://localhost:9865/requests/index.html
 };
-var route2 = new TestRoute()
-{
-    Method = Method.GET,
-    Path = "/path",
-};
-var route3 = new TestRoute()
-{
-    Method = Method.GET,
-};
-
 var routeStatic = new Static()
 {
-    Path = "/web",
     FilePath = "webroot/Reitbeteiligung"
+    // url: http://localhost:9865
 };
 
 var server = new Server(new Settings()
 {
     Port = 9865,
-    Routes = new Route[] { route1, route2, routeStatic }
+    Routes = new Route[] { routeRequests, routeStatic }
 });
 
 server.Start();
