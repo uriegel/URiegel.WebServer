@@ -13,7 +13,7 @@
 		<PackageProjectUrl>https://github.com/uriegel/URiegel.WebServer</PackageProjectUrl>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageTags>C#.Webserver.dotnet</PackageTags>
+		<PackageTags>C#;dotnet;Webserver</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageReleaseNotes>.NET 5.0</PackageReleaseNotes>  
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
