@@ -1,39 +1,37 @@
 ﻿using System;
+using System.Threading.Tasks;
 using UwebServer;
 
-namespace Tester
+var route1 = new TestRoute()
 {
-    class Program
+    Method = Method.GET,
+    Path = "/test"
+};
+var route2 = new TestRoute()
+{
+    Method = Method.GET,
+    Path = "/path",
+};
+var route3 = new TestRoute()
+{
+    Method = Method.GET,
+};
+
+var server = new Server(new Settings()
+{
+    Port = 9865,
+    Routes = new[] { route1, route2 }
+});
+
+server.Start();
+Console.ReadLine();
+server.Stop();
+
+class TestRoute : Route
+{
+    public override Task ProcessAsync(Response response)
     {
-        static void Main(string[] args)
-        {
-            var route1 = new Route
-            {
-                Method = Method.GET,
-                Path = "/test",
-                Process = () => Console.WriteLine("Eingeschlagen")
-            };
-            var route2 = new Route
-            {
-                Method = Method.GET,
-                Path = "/path",
-                Process = () => Console.WriteLine("Eingeschlagen in path")
-            };
-            var route3 = new Route
-            {
-                Method = Method.GET,
-                Process = () => Console.WriteLine("Eingeschlagen im Rest")
-            };
-
-            var server = new Server(new Settings()
-            {
-                Port = 9865,
-                Routes = new[] { route1, route2 }
-            });
-
-            server.Start();
-            Console.ReadLine();
-            server.Stop();
-        }
+        Console.WriteLine($"Eingeschlagen in {Path}");
+        return Task.FromResult(0);
     }
 }

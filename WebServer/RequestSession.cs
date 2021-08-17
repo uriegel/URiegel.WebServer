@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace UwebServer
 {
-    class RequestSession 
+    class RequestSession : IRequest
     {
         public DateTime? RequestStartTime { get; private set; }
         public DateTime RequestStart { get => RequestStartTime ?? DateTime.Now; }
@@ -123,6 +123,12 @@ namespace UwebServer
             catch { }
         }
 
+        public async Task WriteAsync(byte[] buffer, int offset, int length)
+        {
+            await networkStream.WriteAsync(buffer, offset, length);
+            BytesSent += length;
+        }
+
         async Task<bool> ReceiveAsync(int bufferPosition)
         {
             try
@@ -146,16 +152,24 @@ namespace UwebServer
 
 				// if (Headers.Method == Method.OPTIONS)
                 //     return ServeOptions();
-                foreach (var route in Server.Settings.Routes)
-                {
-                    if (route.Method != Method.UNDEFINED && route.Method != Headers.Method)
-                        continue;
-                    if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
-                        continue;
-                    route.Process();
-                }
 
+                await ProcessRoutes();
                 return true;
+
+                async Task ProcessRoutes()
+                {
+                    var response = new Response(this, responseHeaders);
+                    foreach (var route in Server.Settings.Routes)
+                    {
+                        if (route.Method != Method.UNDEFINED && route.Method != Headers.Method)
+                            continue;
+                        if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
+                            continue;
+                        await route.ProcessAsync(response);
+                        return;
+                    }
+                    await response.SendNotFoundAsync();
+                }
             }
             catch (SocketException se)
             {

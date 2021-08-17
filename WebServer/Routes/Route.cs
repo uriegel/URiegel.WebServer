@@ -1,11 +1,12 @@
 using System;
+using System.Threading.Tasks;
 
 namespace UwebServer
 {
-    public class Route
+    public abstract class Route
     {
         public Method Method {get; set;}
         public string Path { get; set; }
-        public Action Process { get; set; } 
+        public abstract Task ProcessAsync(Response response);
     }
 }
