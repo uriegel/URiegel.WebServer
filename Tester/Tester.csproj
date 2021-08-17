@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\UwebServer\UwebServer.csproj" />
+    <ProjectReference Include="..\UwebServer2\UwebServer2.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
