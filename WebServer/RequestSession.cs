@@ -165,7 +165,7 @@ namespace UwebServer
                             continue;
                         if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
                             continue;
-                        await route.ProcessAsync(response);
+                        await route.ProcessAsync(Headers, response);
                         return;
                     }
                     await response.SendNotFoundAsync();

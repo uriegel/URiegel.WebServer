@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using UwebServer;
+using UwebServer.Routes;
 
 var route1 = new TestRoute()
 {
@@ -17,10 +18,16 @@ var route3 = new TestRoute()
     Method = Method.GET,
 };
 
+var routeStatic = new Static()
+{
+    Path = "/web",
+    FilePath = "webroot/Reitbeteiligung"
+};
+
 var server = new Server(new Settings()
 {
     Port = 9865,
-    Routes = new[] { route1, route2 }
+    Routes = new Route[] { route1, route2, routeStatic }
 });
 
 server.Start();
@@ -29,7 +36,7 @@ server.Stop();
 
 class TestRoute : Route
 {
-    public override Task ProcessAsync(Response response)
+    public override Task ProcessAsync(IRequestHeaders requestHeaders, Response response)
     {
         Console.WriteLine($"Eingeschlagen in {Path}");
         return Task.FromResult(0);

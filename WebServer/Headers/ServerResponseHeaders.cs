@@ -39,7 +39,7 @@ namespace UwebServer
 			get => (headers.ContainsKey("Connection") ? String.Compare(headers["Connection"], "close", true) == 0 : false); 
 		}
 
-        public void Initialize(string? contentType, int contentLength, string? lastModified, bool noCache)
+        public void Initialize(string contentType, int contentLength, string lastModified, bool noCache)
         {
             ContentLength = contentLength;
             if (contentType == "video/mp4")

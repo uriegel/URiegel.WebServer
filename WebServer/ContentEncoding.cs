@@ -1,6 +1,6 @@
 namespace UwebServer
 {
-	enum ContentEncoding
+	public enum ContentEncoding
 	{
 		None,
 		Deflate,

@@ -1,6 +1,6 @@
 namespace UwebServer
 {
-	interface IRequestHeaders : IHeaders
+	public interface IRequestHeaders : IHeaders
 	{
 		Method Method { get; }
 		string Url { get; }
@@ -8,6 +8,6 @@ namespace UwebServer
 		string Http { get; }
 		ContentEncoding ContentEncoding { get; }
 		bool Http10 { get; }
-		string? UserAgent { get; }
+		string UserAgent { get; }
 	}
 }
