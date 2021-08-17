@@ -1,3 +1,6 @@
+const btnRest = document.getElementById("buttonRest")
+btnRest.onclick = testRest
+
 const btn = document.getElementById("button")
 btn.onclick = test
 
@@ -8,6 +11,13 @@ async function test() {
 function testRequest() {
     return invoke("runOperation", { id: "ID Test", name: "Uwe Riegel" })
 }
+
+async function testRest() {
+    const responseStr = await fetch(`testreq/method?id=23&name=Uwe Riegel`)
+    var result = await responseStr.json()
+    console.log(`Result: ${result}`)
+}
+
 
 function invoke(method, param) {
     return new Promise((resolve, reject) => {

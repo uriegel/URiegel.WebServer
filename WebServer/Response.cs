@@ -107,6 +107,47 @@ namespace UwebServer
             }
         }
 
+        public async Task SendJsonBytesAsync(byte[] json)
+        {
+            byte[] sendBytes = GetSendBytes(json);
+            var contentLength = (int)sendBytes.Length;
+            responseHeaders.InitializeJson(contentLength);
+            switch (requestSession.Headers.ContentEncoding)
+            {
+                case ContentEncoding.Deflate:
+                    responseHeaders.Add("Content-Encoding", "deflate");
+                    break;
+                case ContentEncoding.GZip:
+                    responseHeaders.Add("Content-Encoding", "gzip");
+                    break;
+                default:
+                    break;
+            }
+            var tcpPayload = responseHeaders.Access(requestSession.SocketSession.UseTls, requestSession.HttpResponseString, requestSession.Headers, sendBytes);
+            await requestSession.WriteAsync(tcpPayload, 0, tcpPayload.Length);
+
+            byte[] GetSendBytes(byte[] json)
+            {
+                var memStm = new MemoryStream();
+                Stream streamToDeserialize;
+                switch (requestSession.Headers.ContentEncoding)
+                {
+                    case ContentEncoding.Deflate:
+                        streamToDeserialize = new DeflateStream(memStm, System.IO.Compression.CompressionMode.Compress, true);
+                        break;
+                    case ContentEncoding.GZip:
+                        streamToDeserialize = new GZipStream(memStm, System.IO.Compression.CompressionMode.Compress, true);
+                        break;
+                    default:
+                        return json;
+                }
+                streamToDeserialize.Write(json, 0, json.Length);
+                streamToDeserialize.Close();
+                memStm.Capacity = (int)memStm.Length;
+                return memStm.GetBuffer();
+            }
+        }
+
         public async Task SendStreamAsync(Stream stream, string contentType, string lastModified, bool noCache)
         {
             if (!noCache)

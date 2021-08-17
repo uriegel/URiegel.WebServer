@@ -22,6 +22,10 @@
 
 	<ItemGroup>
     	<None Include="../LICENSE" Pack="true" PackagePath="" />
-  	</ItemGroup>  
+  	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	</ItemGroup>  
 
 </Project>

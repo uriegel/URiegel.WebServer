@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace UwebServer
 {
-    class UrlComponents
+    public class UrlComponents
     {
         public string Path;
 		public Dictionary<string, string> Parameters;
