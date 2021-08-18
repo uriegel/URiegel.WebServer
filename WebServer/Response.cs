@@ -254,7 +254,7 @@ namespace UwebServer
             await SendRangeAsync(stream, fi.Length, file, null);
         }
 
-		async Task SendRangeAsync(Stream stream, long fileLength, string? file, string? contentType)
+		async Task SendRangeAsync(Stream stream, long fileLength, string file, string contentType)
 		{
 			var rangeString = requestSession.Headers["range"];
 			if (rangeString == null)
