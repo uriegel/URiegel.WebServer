@@ -8,14 +8,24 @@ async function test() {
     await testRequest()
 }
 
-function testRequest() {
-    return invoke("runOperation", { id: "ID Test", name: "Uwe Riegel" })
+async function testRequest() {
+    const responseStr = await fetch(`testreq/method`, {
+        method: 'POST',
+        cache: 'no-cache',
+        headers: { 'content-type': 'application/json'},
+        body: JSON.stringify({
+            name: "Uwe Riegel",
+            id: 9865
+        })
+    })
+    var result = await responseStr.json()
+    console.log(`service result: ${result}`)
 }
 
 async function testRest() {
     const responseStr = await fetch(`testreq/method?id=23&name=Uwe Riegel`)
     var result = await responseStr.json()
-    console.log(`Result: ${result}`)
+    console.log(`result: ${result}`)
 }
 
 

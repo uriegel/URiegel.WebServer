@@ -6,6 +6,6 @@ namespace UwebServer.Routes
     {
         public Method Method {get; set;}
         public string Path { get; set; }
-        public abstract Task ProcessAsync(IRequestHeaders headers, Response response);
+        public abstract Task ProcessAsync(IRequest request, IRequestHeaders headers, Response response);
     }
 }

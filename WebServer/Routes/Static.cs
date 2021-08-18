@@ -6,7 +6,7 @@ namespace UwebServer.Routes
     public class Static : Route
     {
         public string FilePath { get; set; }
-        public override async Task ProcessAsync(IRequestHeaders requestHeaders, Response response)
+        public override async Task ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
         {
             try 
             {

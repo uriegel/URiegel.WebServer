@@ -129,6 +129,38 @@ namespace UwebServer
             BytesSent += length;
         }
 
+        public async Task ReadStreamAsync(Stream stream)
+        {
+            var cls = Headers["content-length"];
+            var length = int.Parse(cls ?? "0");
+
+            while (length > 0)
+            {
+                int read;
+                if (readFromBuffer)
+                {
+                    var cache = bufferReadCount - bufferEndPosition;
+                    if (cache > 0)
+                        read = Math.Min(length, cache);
+                    else
+                    {
+                        readFromBuffer = false;
+                        continue;
+                    }
+                }
+                else
+                {
+                    var readLength = Math.Min(readBuffer.Length, length);
+                    read = await networkStream.ReadAsync(readBuffer, 0, readLength);
+                    if (read == 0 && readLength > 0)
+                        throw new ConnectionClosedException();
+                }
+                length -= read;
+                await stream.WriteAsync(readBuffer, readFromBuffer ? bufferEndPosition : 0, read);
+                readFromBuffer = false;
+            }
+        }
+
         async Task<bool> ReceiveAsync(int bufferPosition)
         {
             try
@@ -165,7 +197,7 @@ namespace UwebServer
                             continue;
                         if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
                             continue;
-                        await route.ProcessAsync(Headers, response);
+                        await route.ProcessAsync(this, Headers, response);
                         return;
                     }
                     await response.SendNotFoundAsync();
