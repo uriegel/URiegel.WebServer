@@ -27,6 +27,34 @@ namespace UwebServer
             }
         }
 
+        public Task SendFileStreamAsync(string file, Func<string, Stream> GetStream) => SendFileStreamAsync(file, GetStream, null);
+        public async Task SendFileStreamAsync(string file, Func<string, Stream> GetStream, DateTime? lastModifiedTime)
+        {
+            var noCache = false; // TODO requestSession.Server.Settings.NoCacheFiles.Contains(file.ToLower());
+
+            if (!noCache && lastModifiedTime.HasValue && Check304(lastModifiedTime.Value))
+            {
+                await SendNotModifiedAsync();
+                return;
+            }
+
+            var fi = new FileInfo(file);
+            var contentType = GetContentType(fi.Extension);
+            var lastModified = lastModifiedTime.HasValue 
+                ? lastModifiedTime.Value.ToUniversalTime().ToString("r") 
+                : null;
+            var isImage = contentType?.StartsWith("image/") ?? false;
+            try
+            {
+                using var stream = GetStream(file);
+                await SendStreamAsync(stream, contentType, lastModified, noCache);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"{requestSession.Id} Could not send file: {e}");
+            }
+        }
+
         public async Task SendNotFoundAsync()
         {
             var status = 404;
@@ -315,8 +343,7 @@ Content-Type: {contentType}
 
         readonly RequestSession requestSession;
         readonly ServerResponseHeaders responseHeaders;
-        readonly static MimeTypes mimeTypes;
-      	const string NOT_MODIFIED = "Fri, 01 Jun 2012 08:28:30 GMT";
-
+        readonly static MimeTypes mimeTypes = new MimeTypes();
+      	const string NOT_MODIFIED = "Fri, 01 Jun 2012 08:28:30 GMT"; // Send 304 NOT Modified
     }
 }

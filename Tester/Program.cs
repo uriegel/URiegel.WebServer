@@ -1,10 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using UwebServer;
 using UwebServer.Routes;
-
-// TODO: Send FileStream (from resource): Static with callback
-// TODO: FirstTimeModified behavior
 
 var routeRequests = new Static()
 {
@@ -13,15 +11,32 @@ var routeRequests = new Static()
     FilePath = "webroot/Requests"
     // url: http://localhost:9865/requests/index.html
 };
+
+var routeWebSite = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)))
+{
+    Path = "/web",
+    // url: http://localhost:9865/web/index.html
+};
+
+var startTime = DateTime.Now;
+
+var routeWebSiteFirstTime = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)), _ => startTime)
+{
+    Path = "/webfirst",
+    // url: http://localhost:9865/webfirst/index.html
+};
+
 var routeStatic = new Static()
 {
     FilePath = "webroot/Reitbeteiligung"
     // url: http://localhost:9865
 };
+
 var routeJsonRest = new JsonRest("/requests/testreq", async urlQuery => 
     {
         return new { Name = "Uwe Riegel", EMail = "uriegel@web.de" };
     });
+
 var routeJsonService = new JsonService("/requests/testreq", async input => 
     {
         var path = input.Path;
@@ -32,7 +47,15 @@ var routeJsonService = new JsonService("/requests/testreq", async input =>
 var server = new Server(new Settings()
 {
     Port = 9865,
-    Routes = new Route[] { routeJsonRest, routeJsonService, routeRequests, routeStatic }
+    Routes = new Route[] 
+    { 
+        routeJsonRest, 
+        routeJsonService, 
+        routeRequests, 
+        routeWebSiteFirstTime,
+        routeWebSite, 
+        routeStatic 
+    }
 });
 
 server.Start();
