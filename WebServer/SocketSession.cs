@@ -35,7 +35,8 @@ namespace UwebServer
         {
 			var session = new SocketSession(server, tcpClient, isSecured);
 			await session.ReceiveAsync();
-		}
+            tcpClient.Close();
+        }
 
 		public async Task ReceiveAsync()
         {

@@ -90,6 +90,18 @@ namespace UwebServer
             await requestSession.WriteAsync(responseBytes, 0, responseBytes.Length);
         }
 
+        public async Task Send401Basic(string realm)
+        {
+            var status = 401;
+            var statusText = "Unauthorized";
+            responseHeaders.Status = status;
+            responseHeaders.StatusDescription = statusText;
+            responseHeaders.Add("WWW-Authenticate", $"Basic realm=\"{realm}\"");
+            var headerBuffer = responseHeaders.Access(requestSession.SocketSession.UseTls, requestSession.HttpResponseString, requestSession.Headers);
+            await requestSession.WriteAsync(headerBuffer, 0, headerBuffer.Length);
+            Console.WriteLine($"{requestSession.Id} {status} {statusText}");
+        }
+
         string CreateErrorHead(int statusCode, string statusText)
             => $@"<meta http-equiv=""Content-Type"" content=""text/html""/>
 <title>{statusCode} - {statusText}</title>

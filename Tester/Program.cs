@@ -18,6 +18,16 @@ var routeWebSite = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitb
     // url: http://localhost:9865/web/index.html
 };
 
+var routeBasic = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)))
+{
+    Path = "/basic",
+    BasicAuthentication = new()
+    {
+        Realm = "Reitbeteiligung"
+    }
+    // url: http://localhost:9865/basic/index.html
+};
+
 var startTime = DateTime.Now;
 
 var routeWebSiteFirstTime = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)), _ => startTime)
@@ -53,6 +63,7 @@ var server = new Server(new Settings()
         routeJsonService, 
         routeRequests, 
         routeWebSiteFirstTime,
+        routeBasic,
         routeWebSite, 
         routeStatic 
     }

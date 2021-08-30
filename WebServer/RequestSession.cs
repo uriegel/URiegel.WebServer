@@ -185,10 +185,9 @@ namespace UwebServer
 				// if (Headers.Method == Method.OPTIONS)
                 //     return ServeOptions();
 
-                await ProcessRoutes();
-                return true;
+                return await ProcessRoutes();
 
-                async Task ProcessRoutes()
+                async Task<bool> ProcessRoutes()
                 {
                     var response = new Response(this, responseHeaders);
                     foreach (var route in Server.Settings.Routes)
@@ -197,10 +196,16 @@ namespace UwebServer
                             continue;
                         if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
                             continue;
+                        if (route.BasicAuthentication != null)
+                        {
+                            if (! await route.BasicAuthentication.Authenticate(response, Headers))
+                                return false;
+                        }
                         await route.ProcessAsync(this, Headers, response);
-                        return;
+                        return true;
                     }
                     await response.SendNotFoundAsync();
+                    return false;
                 }
             }
             catch (SocketException se)
