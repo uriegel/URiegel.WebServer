@@ -17,8 +17,12 @@ namespace UwebServer.Routes
 
         public override async Task ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
         {
-            var path = requestHeaders.Url[(Path.Length+1)..];
-            var query = new UrlComponents(path);
+            UrlComponents query = null;
+            if (Path.Length > requestHeaders.Url.Length + 2)
+            {
+                var path = requestHeaders.Url[(Path.Length+1)..];
+                query = new UrlComponents(path);
+            }
             var result = await OnRequest(query);
             var resultString = JsonConvert.SerializeObject(result, Json.DefaultSettings);
             await response.SendJsonBytesAsync(Encoding.UTF8.GetBytes(resultString));

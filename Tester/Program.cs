@@ -23,7 +23,9 @@ var routeBasic = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbet
     Path = "/basic",
     BasicAuthentication = new()
     {
-        Realm = "Reitbeteiligung"
+        Realm = "Reitbeteiligung",
+        Name = "Test",
+        Password = "pw"
     }
     // url: http://localhost:9865/basic/index.html
 };
