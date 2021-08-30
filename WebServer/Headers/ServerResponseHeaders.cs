@@ -15,7 +15,7 @@ namespace UwebServer
 
         public int Status { get; set; } = 200;
         public string StatusDescription { get; set; } = "OK";
-        public int ContentLength
+        public long ContentLength
         {
             get
             {
@@ -32,14 +32,14 @@ namespace UwebServer
             }
             private set => _ContentLength = value;
         }
-        int? _ContentLength;
+        long? _ContentLength;
 
 		public bool CloseConnection
 		{
 			get => (headers.ContainsKey("Connection") ? String.Compare(headers["Connection"], "close", true) == 0 : false); 
 		}
 
-        public void Initialize(string contentType, int contentLength, string lastModified, bool noCache)
+        public void Initialize(string contentType, long contentLength, string lastModified, bool noCache)
         {
             ContentLength = contentLength;
             if (contentType == "video/mp4")
@@ -79,8 +79,8 @@ namespace UwebServer
         {
             if (key == "Content-Length")
             {
-                int val = -1;
-                int.TryParse(value, out val);
+                long val = -1;
+                long.TryParse(value, out val);
                 ContentLength = val;
             }
             headers[key] = value;
@@ -88,7 +88,7 @@ namespace UwebServer
 
 		public bool Has(string key) =>  headers.ContainsKey(key);
 
-        public void SetInfo(int status, int contentLength)
+        public void SetInfo(int status, long contentLength)
         {
             ContentLength = contentLength;
             Status = status;

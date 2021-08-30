@@ -231,7 +231,7 @@ namespace UwebServer
                 ms.Position = 0;
             }
 
-            responseHeaders.Initialize(contentType, (int)stream.Length, lastModified, noCache);
+            responseHeaders.Initialize(contentType, stream.Length, lastModified, noCache);
 
             if (contentType != null &&
                 (contentType.StartsWith("application/javascript", StringComparison.InvariantCultureIgnoreCase)
