@@ -315,7 +315,7 @@ Content-Type: {contentType}
 			long completeRead = 0;
 			while (true)
 			{
-				var read = await stream.ReadAsync(bytes, 0, Math.Min(bytes.Length, (int)(contentLength - completeRead)));
+				var read = await stream.ReadAsync(bytes, 0, (int)Math.Min((long)bytes.Length, contentLength - completeRead));
 				if (read == 0)
 					return;
 				completeRead += read;
