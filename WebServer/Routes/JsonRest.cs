@@ -24,7 +24,7 @@ namespace UwebServer.Routes
                 query = new UrlComponents(path);
             }
             var result = await OnRequest(query);
-            if (result != null && NotProcessed)
+            if (result != null && !NotProcessed)
             {
                 var resultString = JsonConvert.SerializeObject(result, Json.DefaultSettings);
                 await response.SendJsonBytesAsync(Encoding.UTF8.GetBytes(resultString));

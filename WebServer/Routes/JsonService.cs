@@ -25,7 +25,7 @@ namespace UwebServer.Routes
             var input = new MemoryStream();
             await request.ReadStreamAsync(input);
             var result = await OnRequest(new(path, new RequestParam(input)));
-            if (result != null && NotProcessed)
+            if (result != null && !NotProcessed)
             {
                 var resultString = JsonConvert.SerializeObject(result, Json.DefaultSettings);
                 await response.SendJsonBytesAsync(Encoding.UTF8.GetBytes(resultString));
