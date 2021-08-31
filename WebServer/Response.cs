@@ -14,16 +14,17 @@ namespace UwebServer
             this.responseHeaders = responseHeaders;
         }
 
-        public async Task SendFileAsync(string file)
+        public async Task SendFileAsync(string file, string contentType = null)
         {
             {
                 if (file.EndsWith(".mp4", StringComparison.InvariantCultureIgnoreCase)
                     || file.EndsWith(".mkv", StringComparison.InvariantCultureIgnoreCase)
                     || file.EndsWith(".mp3", StringComparison.InvariantCultureIgnoreCase)
-                    || file.EndsWith(".wav", StringComparison.InvariantCultureIgnoreCase))
-                    await SendRangeAsync(file);
+                    || file.EndsWith(".wav", StringComparison.InvariantCultureIgnoreCase)
+                    || file.EndsWith(".ogg", StringComparison.InvariantCultureIgnoreCase))
+                    await SendRangeAsync(file, contentType);
                 else
-                    await InternalSendFileAsync(file);
+                    await InternalSendFileAsync(file, contentType);
             }
         }
 
@@ -115,7 +116,7 @@ namespace UwebServer
 </style>
 ";
 
-        async Task InternalSendFileAsync(string file)
+        async Task InternalSendFileAsync(string file, string contentType)
         {
             var fi = new FileInfo(file);
             if (!fi.Exists)
@@ -132,7 +133,7 @@ namespace UwebServer
                 return;
             }
 
-            var contentType = GetContentType(fi.Extension);
+            contentType = contentType ?? GetContentType(fi.Extension);
             var dateTime = fi.LastWriteTime;
             var lastModified = dateTime.ToUniversalTime().ToString("r");
             var isImage = contentType?.StartsWith("image/") ?? false;
@@ -259,11 +260,11 @@ namespace UwebServer
             }
         }
 
-        async Task SendRangeAsync(string file)
+        async Task SendRangeAsync(string file, string contentType)
         {
             var fi = new FileInfo(file);
             using Stream stream = File.OpenRead(file);
-            await SendRangeAsync(stream, fi.Length, file, null);
+            await SendRangeAsync(stream, fi.Length, file, contentType);
         }
 
 		async Task SendRangeAsync(Stream stream, long fileLength, string file, string contentType)
@@ -272,7 +273,7 @@ namespace UwebServer
 			if (rangeString == null)
 			{
 				if (!string.IsNullOrEmpty(file))
-					await InternalSendFileAsync(file);
+					await InternalSendFileAsync(file, contentType);
 				else
 					await SendStreamAsync(stream, contentType, DateTime.Now.ToUniversalTime().ToString("r"), true);
 				return;
@@ -355,7 +356,7 @@ Content-Type: {contentType}
 
         readonly RequestSession requestSession;
         readonly ServerResponseHeaders responseHeaders;
-        readonly static MimeTypes mimeTypes = new MimeTypes();
+        readonly static MimeTypes mimeTypes = new();
       	const string NOT_MODIFIED = "Fri, 01 Jun 2012 08:28:30 GMT"; // Send 304 NOT Modified
     }
 }

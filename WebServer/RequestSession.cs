@@ -201,8 +201,7 @@ namespace UwebServer
                             if (! await route.BasicAuthentication.Authenticate(response, Headers))
                                 return false;
                         }
-                        await route.ProcessAsync(this, Headers, response);
-                        if (route.NotProcessed)
+                        if (!await route.ProcessAsync(this, Headers, response))
                             continue;
                         return true;
                     }

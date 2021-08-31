@@ -304,6 +304,7 @@ namespace UwebServer
             {".odp", "application/vnd.oasis.opendocument.presentation"},
             {".ods", "application/oleobject"},
             {".odt", "application/vnd.oasis.opendocument.text"},
+            {".ogg", "video/ogg"},
             {".one", "application/onenote"},
             {".onea", "application/onenote"},
             {".onepkg", "application/onenote"},

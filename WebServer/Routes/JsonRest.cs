@@ -15,7 +15,7 @@ namespace UwebServer.Routes
             OnRequest = onRequest;
         } 
 
-        public override async Task ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
+        public override async Task<bool> ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
         {
             UrlComponents query = null;
             if (requestHeaders.Url.Length > Path.Length + 2)
@@ -28,9 +28,10 @@ namespace UwebServer.Routes
             {
                 var resultString = JsonConvert.SerializeObject(result, Json.DefaultSettings);
                 await response.SendJsonBytesAsync(Encoding.UTF8.GetBytes(resultString));
+                return true;
             }
             else
-                NotProcessed = true;
+                return false;
         }
     }
 }

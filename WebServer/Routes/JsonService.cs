@@ -19,7 +19,7 @@ namespace UwebServer.Routes
             OnRequest = onRequest;
         } 
 
-        public override async Task ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
+        public override async Task<bool> ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
         {
             var path = requestHeaders.Url[(Path.Length+1)..];
             var input = new MemoryStream();
@@ -29,9 +29,10 @@ namespace UwebServer.Routes
             {
                 var resultString = JsonConvert.SerializeObject(result, Json.DefaultSettings);
                 await response.SendJsonBytesAsync(Encoding.UTF8.GetBytes(resultString));
+                return true;
             }
             else
-                NotProcessed = true;
+                return false;
         }
     }
 }

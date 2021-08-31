@@ -6,7 +6,7 @@ namespace UwebServer.Routes
     public class Static : Route
     {
         public string FilePath { get; set; }
-        public override async Task ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
+        public override async Task<bool> ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
         {
             try 
             {
@@ -20,6 +20,7 @@ namespace UwebServer.Routes
                 Console.WriteLine($"Error static route, url: {requestHeaders.Url}, path: {Path}, {e}");
                 await response.SendNotFoundAsync();
             }
+            return true;
         }
     }
 }

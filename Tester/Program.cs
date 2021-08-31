@@ -79,9 +79,9 @@ record JsonServiceInput(string name, int id);
 
 class TestRoute : Route
 {
-    public override Task ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
+    public override Task<bool> ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
     {
         Console.WriteLine($"Eingeschlagen in {Path}");
-        return Task.FromResult(0);
+        return Task.FromResult(true);
     }
 }
