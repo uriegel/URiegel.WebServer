@@ -202,6 +202,8 @@ namespace UwebServer
                                 return false;
                         }
                         await route.ProcessAsync(this, Headers, response);
+                        if (route.NotProcessed)
+                            continue;
                         return true;
                     }
                     await response.SendNotFoundAsync();
