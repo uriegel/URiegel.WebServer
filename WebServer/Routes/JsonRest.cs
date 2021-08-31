@@ -18,7 +18,7 @@ namespace UwebServer.Routes
         public override async Task ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
         {
             UrlComponents query = null;
-            if (Path.Length > requestHeaders.Url.Length + 2)
+            if (requestHeaders.Url.Length > Path.Length + 2)
             {
                 var path = requestHeaders.Url[(Path.Length+1)..];
                 query = new UrlComponents(path);
