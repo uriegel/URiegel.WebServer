@@ -26,7 +26,7 @@ namespace UwebServer
                 ? urlWithoutQuery.Length > url.Length + 1
                     ? urlWithoutQuery[(url.Length + 1)..]
                     : ""
-                : "";
+                : "" ;
             Path = Uri.UnescapeDataString(path.Replace('+', ' '));
         }
 

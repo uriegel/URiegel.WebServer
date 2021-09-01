@@ -17,8 +17,13 @@ namespace UwebServer
         {
             long.TryParse(requestHeaders["Content-Length"], out var length);
             var query = new UrlComponents(requestHeaders.Url, Path);
-            //var filename = System.IO.Path.Combine(uploadPath, query.Path, query.Parameters["file"]);
-            var filename = System.IO.Path.Combine(uploadPath, query.Parameters["file"]);
+            if (!string.IsNullOrEmpty(query.Path))
+            {
+                var folderPath = System.IO.Path.Combine(uploadPath, query.Path);
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+            }
+            var filename = System.IO.Path.Combine(uploadPath, query.Path, query.Parameters["file"]);
             using var file = File.Create(filename);
             await request.ReadStreamAsync(file);
             return true;

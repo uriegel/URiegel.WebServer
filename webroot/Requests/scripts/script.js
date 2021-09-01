@@ -126,6 +126,7 @@ async function uploadFile(path, file) {
             const progress = e.loaded / e.total * 100
             progressBar.style.width = `${progress}%`
             if (progress == 100) {
+                request.abort()
                 res()
                 setTimeout(() => progressBar.style.width = 0, 1000)
             }
