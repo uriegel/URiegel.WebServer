@@ -16,7 +16,8 @@ namespace UwebServer
         public override async Task<bool> ProcessAsync(IRequest request, IRequestHeaders requestHeaders, Response response)
         {
             long.TryParse(requestHeaders["Content-Length"], out var length);
-            var query = new UrlComponents(requestHeaders.Url);
+            var query = new UrlComponents(requestHeaders.Url, Path);
+            //var filename = System.IO.Path.Combine(uploadPath, query.Path, query.Parameters["file"]);
             var filename = System.IO.Path.Combine(uploadPath, query.Parameters["file"]);
             using var file = File.Create(filename);
             await request.ReadStreamAsync(file);

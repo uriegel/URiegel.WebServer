@@ -70,10 +70,13 @@ async function dropHandler(ev) {
                 var file = ev.dataTransfer.items[i].getAsFile();
                 console.log('... file[' + i + '].name = ' + file.name);
                 var entry = ev.dataTransfer.items[i].webkitGetAsEntry();
-                if (entry.isFile)
-                    await uploadFile(await getFile(entry))
-                else if (entry.isDirectory) 
-                    traverseFileTree(entry)
+                var items = traverseFileTree(entry)
+                while (true) {
+                    entry = await items.next();
+                    if (entry.done)
+                        break
+                    await uploadFile(entry.value.path, await getFile(entry.value.item))
+                }
             }
         }
     }   else {
@@ -85,37 +88,49 @@ async function dropHandler(ev) {
 
 async function getFile(entry) {
     return new Promise(res => {
-        entry.file(file => res(file))
+        entry.file(file => {
+            res(file)
+        })
     })
 }
 
-function traverseFileTree(item, path) {
+async function readEntries(entry) {
+    return new Promise(res => {
+        const dirReader = entry.createReader()
+        dirReader.readEntries(entries => res(entries)) 
+    })
+}
+
+async function* traverseFileTree(item, path) {
     path = path || ""
-    if (item.isFile) 
-        // Get file
-        item.file(file => console.log("File:", path + file.name))
+    if (item.isFile) {
+        const res = { item, path }
+        yield res
+    }
     else if (item.isDirectory) {
-        // Get folder contents
-        var dirReader = item.createReader()
-        dirReader.readEntries(function(entries) {
-            for (var i=0; i<entries.length; i++) 
-                traverseFileTree(entries[i], path + item.name + "/")
-        })
+        const entries = await readEntries(item)
+        for (const entry of entries) 
+            yield* traverseFileTree(entry, path + item.name + "/")
     }
 }
 
 const progressBar = document.getElementById("progressBar")
 
-async function uploadFile(file) {
-    let request = new XMLHttpRequest()
-    request.open('POST', `/upload?file=${file.name}`) 
-    
-    request.upload.addEventListener('progress', e => {
-        const progress = e.loaded / e.total * 100
-        progressBar.style.width = `${progress}%`
-        if (progress == 100) 
-            setTimeout(() => progressBar.style.width = 0, 1000)
-    })
+async function uploadFile(path, file) {
+    return new Promise(res => {
+        path = path ? `/${path}` : ""
+        let request = new XMLHttpRequest()
+        request.open('POST', `/upload${path}?file=${file.name}`)
+        
+        request.upload.addEventListener('progress', e => {
+            const progress = e.loaded / e.total * 100
+            progressBar.style.width = `${progress}%`
+            if (progress == 100) {
+                res()
+                setTimeout(() => progressBar.style.width = 0, 1000)
+            }
+        })
 
-    request.send(file);
+        request.send(file)
+    })
 }

@@ -10,30 +10,25 @@ namespace UwebServer
         public string Path;
 		public Dictionary<string, string> Parameters;
 
-		public UrlComponents(string query)
+		public UrlComponents(string completeUrl, string url)
 		{
-			Path = "";
-
-			if (!string.IsNullOrEmpty(query) && query.Contains('?'))
+            var urlWithoutQuery = completeUrl;
+            if (completeUrl.Contains('?'))
 			{
-				var pos = query.IndexOf('?');
-				if (pos >= 0)
-				{
-					Path = query.Substring(0, pos) ?? "";
-					Parameters = GetParameters(query).ToDictionary(n => n.Key, n => n.Value);
-				}
-				else
-				{
-					Path = query ?? "";
-					Parameters = new Dictionary<string, string>();
-				}
-			}
+                var pos = completeUrl.IndexOf('?');
+                Parameters = GetParameters(completeUrl).ToDictionary(n => n.Key, n => n.Value);
+                urlWithoutQuery = completeUrl[..pos];
+            }
 			else
-			{
-				Path = query ?? "";
 				Parameters = new Dictionary<string, string>();
-			}
-		}
+
+            var path = !string.IsNullOrEmpty(url)
+                ? urlWithoutQuery.Length > url.Length + 1
+                    ? urlWithoutQuery[(url.Length + 1)..]
+                    : ""
+                : "";
+            Path = Uri.UnescapeDataString(path.Replace('+', ' '));
+        }
 
         KeyValuePair<string, string>[] GetParameters(string urlParameterString)
 		{
