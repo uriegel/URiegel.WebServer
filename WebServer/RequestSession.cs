@@ -132,7 +132,7 @@ namespace UwebServer
         public async Task ReadStreamAsync(Stream stream)
         {
             var cls = Headers["content-length"];
-            var length = int.Parse(cls ?? "0");
+            var length = long.Parse(cls ?? "0");
 
             while (length > 0)
             {
@@ -141,7 +141,7 @@ namespace UwebServer
                 {
                     var cache = bufferReadCount - bufferEndPosition;
                     if (cache > 0)
-                        read = Math.Min(length, cache);
+                        read = (int)Math.Min(length, (long)cache);
                     else
                     {
                         readFromBuffer = false;
@@ -150,7 +150,7 @@ namespace UwebServer
                 }
                 else
                 {
-                    var readLength = Math.Min(readBuffer.Length, length);
+                    var readLength = (int)Math.Min((long)readBuffer.Length, length);
                     read = await networkStream.ReadAsync(readBuffer, 0, readLength);
                     if (read == 0 && readLength > 0)
                         throw new ConnectionClosedException();

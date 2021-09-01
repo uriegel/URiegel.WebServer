@@ -18,6 +18,8 @@ var routeWebSite = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitb
     // url: http://localhost:9865/web/index.html
 };
 
+var routeUpload = new UploadRoute("/upload", "/home/uwe/upload");
+
 var routeBasic = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)))
 {
     Path = "/basic",
@@ -67,6 +69,7 @@ var server = new Server(new Settings()
         routeWebSiteFirstTime,
         routeBasic,
         routeWebSite, 
+        routeUpload,
         routeStatic 
     }
 });

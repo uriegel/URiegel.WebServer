@@ -4,6 +4,7 @@
 <head>
     <title>Requests</title>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="styles/style.css">
 </head>
 
 <body>
@@ -11,6 +12,13 @@
 
     <button id="buttonRest">Test Rest</button>
     <button id="button">Test</button>
+
+    <div id=drop ondrop="dropHandler(event)" 
+        ondragover="dragOver(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+        <div id=progressBar></div>
+        <div>Drag one or more files to this Drop Zone ...</div>
+    </div>
+
     
     <script src="scripts/script.js"></script>
 </body> 

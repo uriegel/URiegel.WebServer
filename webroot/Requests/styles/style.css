@@ -1,0 +1,19 @@
+#drop {
+    height: 50px;
+    margin-top: 10px;
+    position: relative;
+    background-color: aquamarine;
+}
+
+#drop.drop {
+    background-color: lightyellow;
+}
+
+#drop>div {
+    position: absolute;
+}
+
+#progressBar {
+    height: 100%;
+    background-color: greenyellow;
+}
