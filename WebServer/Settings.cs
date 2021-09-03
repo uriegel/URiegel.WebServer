@@ -15,7 +15,6 @@ namespace UwebServer
         public int Port { get; set; } = 80;
         public int TlsPort { get; set; } = 443;
         public bool IsTlsEnabled { get; set; }
-        public bool TlsRedirect { get; set; }
         public int MinSizeForDeflate { get; set; } = 200;
         public TimeSpan SocketLifetime { get; set; }
         public SslProtocols TlsProtocols { get; set; } = SslProtocols.Tls13;
@@ -37,7 +36,6 @@ DomainName: {DomainName}
 Port: {Port}
 TlsPort: {TlsPort}
 IsTlsEnabled: {IsTlsEnabled}
-TlsRedirect: {TlsRedirect}
 MinSizeForDeflate: {MinSizeForDeflate}
 SocketLifetime: {SocketLifetime}
 TlsProtocols: {TlsProtocols}

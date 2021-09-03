@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 
 namespace UwebServer
@@ -30,16 +32,40 @@ namespace UwebServer
                 if (!result.Ipv6)
                     Console.WriteLine("IPv6 or IPv6 dual mode not supported, switching to IPv4");
 
+                if (Settings.IsTlsEnabled)
+                {
+                    Console.WriteLine("Initializing TLS");
+                    Settings.Certificate = new X509Certificate2(Path.Combine("/etc/letsencrypt-uweb/certificate.pfx"), "uriegel");
+                    Console.WriteLine($"Using certificate: {Settings.Certificate}");
+                    if (Settings.CheckRevocation)
+                        Console.WriteLine("Checking revocation lists");
+
+                    Console.WriteLine($"Listening on secure port {Settings.TlsPort}");
+                    result = Ipv6TcpListenerFactory.Create(Settings.TlsPort);
+                    tlsListener = result.Listener;
+                    if (!result.Ipv6)
+                        Console.WriteLine("IPv6 or IPv6 dual mode not supported, switching to IPv4");
+
+                    Console.WriteLine("TLS initialized");
+                }
+
                 if (listener != null)
                 {
                     Console.WriteLine("Starting HTTP listener...");
                     listener.Start();
                     Console.WriteLine("HTTP listener started");
                 }
+                if (tlsListener != null)
+                {
+                    Console.WriteLine("Starting HTTPS listener...");
+                    tlsListener.Start();
+                    Console.WriteLine("HTTPS listener started");
+                }
                 IsStarted = true;
-
                 if (listener != null)
                     StartConnecting(listener, false);
+                if (tlsListener != null)
+                    StartConnecting(tlsListener, true);
 
                 Console.WriteLine("Server started");
             }
@@ -62,6 +88,12 @@ namespace UwebServer
                     Console.WriteLine("Stopping HTTP listener...");
                     listener.Stop();
                     Console.WriteLine("HTTP listener stopped");
+                }
+                if (tlsListener != null)
+                {
+                    Console.WriteLine("Stopping HTTPS listener...");
+                    tlsListener.Stop();
+                    Console.WriteLine("HTTPS listener stopped");
                 }
 
                 Console.WriteLine("Server stopped");
@@ -128,6 +160,5 @@ namespace UwebServer
 
 		TcpListener listener;
 		TcpListener tlsListener;
-		TcpListener tlsRedirectorListener;
     }
 }

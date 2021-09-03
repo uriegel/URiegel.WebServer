@@ -66,6 +66,8 @@ var routeLetsEncrypt = new LetsEncrypt();
 var server = new Server(new Settings()
 {
     Port = 9865,
+    TlsPort = 4433,
+    IsTlsEnabled = true,
     Routes = new Route[] 
     { 
         routeJsonRest, 
