@@ -17,6 +17,7 @@ namespace UwebServer
 		public IPEndPoint LocalEndPoint { get; private set; }
 		public IPEndPoint RemoteEndPoint { get; private set; }
         public long BytesSent { get; private set; }
+        public bool Tls { get => SocketSession.UseTls; }
 
         public string UrlRoot
         {
@@ -195,6 +196,8 @@ namespace UwebServer
                         if (route.Method != Method.UNDEFINED && route.Method != Headers.Method)
                             continue;
                         if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
+                            continue;
+                        if (route.Tls != null && route.Tls != Tls)
                             continue;
                         if (route.BasicAuthentication != null)
                         {

@@ -70,6 +70,7 @@ var server = new Server(new Settings()
         routeBasic,
         routeWebSite, 
         routeUpload,
+        new LetsEncrypt(),
         routeStatic 
     }
 });
