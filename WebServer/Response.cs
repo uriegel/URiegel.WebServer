@@ -1,8 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace UwebServer
 {
@@ -76,6 +80,23 @@ namespace UwebServer
             await requestSession.WriteAsync(buffer, 0, buffer.Length);
         }
 
+        public async Task SendExceptionAsync(Exception e)
+        {
+            try
+            {
+                throw e;
+            }
+            catch (WebException we) when (we?.InnerException?.InnerException is SocketException se && se.SocketErrorCode == SocketError.ConnectionRefused)
+            {
+                //z.B. Policy Server Dienst ist gestoppt. Damit die Umschaltung vom Client auf einen anderen Server funktioniert, muss 503 zurückkommen anstatt 500 !
+                await Send503Async();
+            }
+            catch 
+            {
+                var (statusCode, statusText, htmlHead, htmlBody) = BuildErrorPage(e, true);
+                await SendErrorAsync(htmlHead, htmlBody, statusCode, statusText);
+            }
+        }
 
         public async Task SendErrorAsync(string htmlHead, string htmlBody, int errorCode, string errorText)
         {
@@ -100,6 +121,16 @@ namespace UwebServer
             responseHeaders.Add("WWW-Authenticate", $"Basic realm=\"{realm}\"");
             var headerBuffer = responseHeaders.Access(requestSession.SocketSession.UseTls, requestSession.HttpResponseString, requestSession.Headers);
             await requestSession.WriteAsync(headerBuffer, 0, headerBuffer.Length);
+            Console.WriteLine($"{requestSession.Id} {status} {statusText}");
+        }
+
+        public async Task Send503Async()
+        {
+            var status = 503;
+            var statusText = "Service Unavailable";
+            var htmlHead = CreateErrorHead(status, statusText);
+            var htmlBody = $"<h2>Service currently unavailable</h2><h3>Please try again after a short period of time.</h3>";
+            await SendErrorAsync(htmlHead, htmlBody, status, statusText);
             Console.WriteLine($"{requestSession.Id} {status} {statusText}");
         }
 
@@ -353,6 +384,46 @@ Content-Type: {contentType}
                 ".appcache" => "text/cache-manifest",
                 _ => mimeTypes[extension]
             };
+
+        (int statusCode, string statusText, string htmlHead, string htmlBody) BuildErrorPage(Exception e, bool async)
+		{
+			var statusCode = 500;
+			var statusText = "Internal server error";
+
+			if (e is FileNotFoundException || e is DirectoryNotFoundException)
+			{
+				statusCode = 404;
+				statusText = "File not found";
+			}
+			else if (e is UnauthorizedAccessException)
+			{
+				statusCode = 403;
+				statusText = "Forbidden";
+			}
+
+            var htmlHead = CreateErrorHead(statusCode, statusText);
+
+            var htmlBody = "";
+			var exception = e;
+			while (null != exception)
+			{
+				htmlBody +=
+$@"<h3>{HttpUtility.HtmlEncode(exception.Message)}</h3>
+<div>
+	<pre>
+{HttpUtility.HtmlEncode(async ? new StackTrace(exception, true).ToString() : exception.StackTrace)}
+	</pre>
+</div>
+";
+				exception = exception.InnerException;
+			}
+
+			htmlBody =
+$@"<h2>{statusText}</h2>
+{htmlBody}
+";
+            return (statusCode, statusText, htmlHead, htmlBody);
+		}
 
         readonly RequestSession requestSession;
         readonly ServerResponseHeaders responseHeaders;

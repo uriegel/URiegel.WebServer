@@ -58,6 +58,11 @@ var routeJsonService = new JsonService("/requests/testreq", async input =>
         return new { Name = "Uwe Riegel", EMail = "uriegel@web.de" };
     });
 
+var routeLetsEncrypt = new LetsEncrypt();
+
+//var routeSearch = new Redirect("/search", "https://www.google.de/");
+//var routeSearch = new Redirect("/", "http://fritz.box");
+
 var server = new Server(new Settings()
 {
     Port = 9865,
@@ -70,7 +75,8 @@ var server = new Server(new Settings()
         routeBasic,
         routeWebSite, 
         routeUpload,
-        new LetsEncrypt(),
+  //      routeSearch,
+        routeLetsEncrypt,
         routeStatic 
     }
 });

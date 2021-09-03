@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace UwebServer
 {
-    class RequestSession : IRequest
+    class RequestSession : IRequest, IInternalRequest
     {
         public DateTime? RequestStartTime { get; private set; }
         public DateTime RequestStart { get => RequestStartTime ?? DateTime.Now; }
