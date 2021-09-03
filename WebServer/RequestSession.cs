@@ -191,13 +191,11 @@ namespace UwebServer
                 async Task<bool> ProcessRoutes()
                 {
                     var response = new Response(this, responseHeaders);
-                    foreach (var route in Server.Settings.Routes)
+                    foreach (var route in SocketSession.Routes)
                     {
                         if (route.Method != Method.UNDEFINED && route.Method != Headers.Method)
                             continue;
                         if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
-                            continue;
-                        if (route.Tls != null && route.Tls != Tls)
                             continue;
                         if (route.BasicAuthentication != null)
                         {

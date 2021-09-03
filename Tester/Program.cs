@@ -7,6 +7,7 @@ using UwebServer.Routes;
 var routeRequests = new Static()
 {
     Method = Method.GET,
+    Tls = false,
     Path = "/requests",
     FilePath = "webroot/Requests"
     // url: http://localhost:9865/requests/index.html
@@ -15,14 +16,19 @@ var routeRequests = new Static()
 var routeWebSite = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)))
 {
     Path = "/web",
+    Tls = false,
     // url: http://localhost:9865/web/index.html
 };
 
-var routeUpload = new UploadRoute("/upload", "/home/uwe/upload");
+var routeUpload = new UploadRoute("/upload", "/home/uwe/upload")
+{
+    Tls = false
+};
 
 var routeBasic = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)))
 {
     Path = "/basic",
+    Tls = false,
     BasicAuthentication = new()
     {
         Realm = "Reitbeteiligung",
@@ -37,6 +43,7 @@ var startTime = DateTime.Now;
 var routeWebSiteFirstTime = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)), _ => startTime)
 {
     Path = "/webfirst",
+    Tls = false,
     // url: http://localhost:9865/webfirst/index.html
 };
 
@@ -49,14 +56,20 @@ var routeStatic = new Static()
 var routeJsonRest = new JsonRest("/requests/testreq", async urlQuery => 
     {
         return new { Name = "Uwe Riegel", EMail = "uriegel@web.de" };
-    });
+    })
+    {
+        Tls = false,
+    };
 
 var routeJsonService = new JsonService("/requests/testreq", async input => 
     {
         var path = input.Path;
         var inputObject = input.RequestParam.Get<JsonServiceInput>();
         return new { Name = "Uwe Riegel", EMail = "uriegel@web.de" };
-    });
+    })
+    {
+        Tls = false,
+    };
 
 var routeLetsEncrypt = new LetsEncrypt();
 

@@ -1,11 +1,13 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
+using UwebServer.Routes;
 
 namespace UwebServer
 {
@@ -19,10 +21,14 @@ namespace UwebServer
 
         public bool UseTls { get; }
 
+        public Route[] Routes { get; }
 
         public SocketSession(Server server, TcpClient client, bool useTls)
         {
             UseTls = useTls;
+            Routes = server.Settings.Routes
+                .Where(n => n.Tls == null || n.Tls == useTls)
+                .ToArray();
             Id = Interlocked.Increment(ref lastId);
             Console.WriteLine($"{Id}- New {(useTls ? "secure " : "")}socket session created: - {(client.Client.RemoteEndPoint as IPEndPoint)}");
             this.server = server;
