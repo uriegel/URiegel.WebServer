@@ -9,6 +9,9 @@ namespace UwebServer
 {
     public class Server
     {
+        static internal string EncryptDirectory { get; } = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "letsencrypt-uweb");
+        // const string encryptDirectory = "/etc/letsencrypt-uweb";
+
         public Settings Settings { get; }
 
         public bool IsStarted { get; private set; }
@@ -18,7 +21,6 @@ namespace UwebServer
             Settings = settings;
             if (string.IsNullOrEmpty(Settings.DomainName))
                 Settings.DomainName = Dns.GetHostEntry(Environment.MachineName).HostName;
-
         }
 
         public void Start()
@@ -35,7 +37,7 @@ namespace UwebServer
                 if (Settings.IsTlsEnabled)
                 {
                     Console.WriteLine("Initializing TLS");
-                    Settings.Certificate = new X509Certificate2(Path.Combine("/etc/letsencrypt-uweb/certificate.pfx"), "uriegel");
+                    Settings.Certificate = new X509Certificate2(Path.Combine(EncryptDirectory, "certificate.pfx"), "uriegel");
                     Console.WriteLine($"Using certificate: {Settings.Certificate}");
                     if (Settings.CheckRevocation)
                         Console.WriteLine("Checking revocation lists");
