@@ -9,7 +9,7 @@ namespace UwebServer
 {
     public class Server
     {
-        static internal string EncryptDirectory { get; } = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "letsencrypt-uweb");
+        static internal string EncryptDirectory { get; } = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "letsencrypt-uweb");
         // const string encryptDirectory = "/etc/letsencrypt-uweb";
 
         public Settings Settings { get; }
