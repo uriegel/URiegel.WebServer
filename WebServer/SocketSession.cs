@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,14 +23,16 @@ namespace UwebServer
 
         public bool UseTls { get; }
 
-        public Route[] Routes { get; }
+        internal ReadOnlyDictionary<string, Route[]> Routes;
 
         public SocketSession(Server server, TcpClient client, bool useTls)
         {
             UseTls = useTls;
-            Routes = server.Settings.Routes
-                .Where(n => n.Tls == null || n.Tls == useTls)
-                .ToArray();
+            Routes = new(server.Routes.Select(n => new { 
+                key = n.Key, 
+                value = n.Value.Where(v => v.Tls == null || v.Tls == useTls).ToArray()
+            }).ToDictionary(n => n.key, n => n.value));
+
             Id = Interlocked.Increment(ref lastId);
             Console.WriteLine($"{Id}- New {(useTls ? "secure " : "")}socket session created: - {(client.Client.RemoteEndPoint as IPEndPoint)}");
             this.server = server;

@@ -1,9 +1,12 @@
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using UwebServer.Routes;
 
 namespace UwebServer
 {
@@ -15,12 +18,19 @@ namespace UwebServer
         public Settings Settings { get; }
 
         public bool IsStarted { get; private set; }
-        
+
+        internal ReadOnlyDictionary<string, Route[]> Routes { get; }
+
         public Server(Settings settings)
         {
             Settings = settings;
             if (string.IsNullOrEmpty(Settings.DomainName))
                 Settings.DomainName = Dns.GetHostEntry(Environment.MachineName).HostName;
+
+            var routes = from n in Settings.Routes
+                         group n by n.Host into v
+                         select new { key = v.Key ?? "", value = v.ToArray() };
+            Routes = new(routes.ToDictionary(n => n.key, n => n.value));
         }
 
         public void Start()

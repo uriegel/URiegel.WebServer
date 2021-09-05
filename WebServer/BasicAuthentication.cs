@@ -16,7 +16,7 @@ namespace UwebServer
             if (authorization == null)
             {
                 await response.Send401Basic(Realm);
-                return false;
+                return true;
             }
             else
             {
@@ -27,7 +27,7 @@ namespace UwebServer
                     return true;
                 await Task.Delay(5000);
                 await response.Send401Basic(Realm);
-                return false;
+                return true;
             }
         }
     }

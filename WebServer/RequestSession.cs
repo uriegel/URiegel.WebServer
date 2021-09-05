@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using UwebServer.Routes;
 
 namespace UwebServer
 {
@@ -191,23 +192,32 @@ namespace UwebServer
                 async Task<bool> ProcessRoutes()
                 {
                     var response = new Response(this, responseHeaders);
-                    foreach (var route in SocketSession.Routes)
-                    {
-                        if (route.Method != Method.UNDEFINED && route.Method != Headers.Method)
-                            continue;
-                        if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
-                            continue;
-                        if (route.BasicAuthentication != null)
-                        {
-                            if (! await route.BasicAuthentication.Authenticate(response, Headers))
-                                return false;
-                        }
-                        if (!await route.ProcessAsync(this, Headers, response))
-                            continue;
+                    if (SocketSession.Routes.TryGetValue(Headers.Host, out var routes) && await Route(routes))
                         return true;
-                    }
+                    if (await Route(SocketSession.Routes[""]))
+                        return true;
                     await response.SendNotFoundAsync();
                     return false;
+
+                    async Task<bool> Route(Route[] routes)
+                    {
+                        foreach (var route in routes)
+                        {
+                            if (route.Method != Method.UNDEFINED && route.Method != Headers.Method)
+                                continue;
+                            if (route.Path != null && !Headers.Url.StartsWith(route.Path, true, null))
+                                continue;
+                            if (route.BasicAuthentication != null)
+                            {
+                                if (! await route.BasicAuthentication.Authenticate(response, Headers))
+                                    return false;
+                            }
+                            if (!await route.ProcessAsync(this, Headers, response))
+                                continue;
+                            return true;
+                        }
+                        return false;
+                    }
                 }
             }
             catch (SocketException se)

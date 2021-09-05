@@ -27,6 +27,7 @@ var routeUpload = new UploadRoute("/upload", "/home/uwe/upload")
 
 var routeBasic = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)))
 {
+    Host = "fritz.uriegel.de",
     Path = "/basic",
     Tls = false,
     BasicAuthentication = new()
@@ -50,6 +51,13 @@ var routeWebSiteFirstTime = new WebSite(file => File.OpenRead(Path.Combine("webr
 var routeStatic = new Static()
 {
     FilePath = "webroot/Reitbeteiligung"
+    // url: http://localhost:9865
+};
+
+var routeStaticFamilie = new Static()
+{
+    Host = "familie.uriegel.de",
+    FilePath = "webroot/Requests"
     // url: http://localhost:9865
 };
 
@@ -92,6 +100,7 @@ var server = new Server(new Settings()
         routeUpload,
   //      routeSearch,
         routeLetsEncrypt,
+        routeStaticFamilie,
         routeStatic 
     }
 });
