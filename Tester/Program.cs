@@ -27,7 +27,6 @@ var routeUpload = new UploadRoute("/upload", "/home/uwe/upload")
 
 var routeBasic = new WebSite(file => File.OpenRead(Path.Combine("webroot/Reitbeteiligung", file)))
 {
-    Host = "fritz.uriegel.de",
     Path = "/basic",
     Tls = false,
     BasicAuthentication = new()
@@ -81,8 +80,10 @@ var routeJsonService = new JsonService("/requests/testreq", async input =>
 
 var routeLetsEncrypt = new LetsEncrypt();
 
-//var routeSearch = new Redirect("/search", "https://www.google.de/");
-//var routeSearch = new Redirect("/", "http://fritz.box");
+var routeFritz = new ReverseProxy("http://fritz.box")
+{
+    Host = "fritz.uriegel.de",
+};
 
 var server = new Server(new Settings()
 {
@@ -98,7 +99,7 @@ var server = new Server(new Settings()
         routeBasic,
         routeWebSite, 
         routeUpload,
-  //      routeSearch,
+        routeFritz,
         routeLetsEncrypt,
         routeStaticFamilie,
         routeStatic 

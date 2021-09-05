@@ -9,16 +9,13 @@ namespace UwebServer.Routes
 {
     public class ReverseProxy : Route
     {
-        public ReverseProxy(string path, string redirectUrl)
-        {
-            Path = path;
-            this.redirectUrl = redirectUrl;
-        }
+        public ReverseProxy(string redirectUrl)
+            => this.redirectUrl = redirectUrl;
 
         public override async Task<bool> ProcessAsync(IRequest request, IRequestHeaders headers, Response response)
         {
-            var query = new UrlComponents(headers.Url, Path);
-            var urlExtension = headers.Url.Length > Path.Length ? headers.Url[Path.Length..] : "";
+             
+            var urlExtension = headers.Url[1..];
             var internalRequest = (IInternalRequest)request;
 
             try
@@ -45,11 +42,10 @@ namespace UwebServer.Routes
 				if (headers.Method != Method.GET && headers.Method != Method.POST)
                     throw new Exception($"Redirection: {headers.Method} not supported");
 
-                var webRequest = (HttpWebRequest)WebRequest.Create(redirectUrl + urlExtension);
+                var webRequest = (HttpWebRequest)WebRequest.Create(redirectUrl + (urlExtension.Length > 1 ? "/" + urlExtension : ""));
                 webRequest.Method = headers.Method.ToString();
 
                 var body = headers.Method == Method.POST ? await GetAsync(request) : null;
-
 				// User-Agent, Referer??
                 foreach (var h in headers.Raw)
                 {
@@ -59,7 +55,7 @@ namespace UwebServer.Routes
                             webRequest.Accept = h.Value.Value;
                             break;
                         case "connection":
-                            if (h.Value.Value != "Keep-Alive")
+                            if (string.Compare(h.Value.Value, "keep-alive", true) != 0)
                                 webRequest.KeepAlive = false;
                             break;
                         case "if-modified-since":
@@ -120,7 +116,7 @@ namespace UwebServer.Routes
                 }
                 // if (addXForwardedUri)
                 //     webRequest.Headers.Add($"X-Forwarded-URI: {CreateXForwarded()}");
-
+webRequest.KeepAlive = false;
                 if (body != null)
                     using (var requestStream = await webRequest.GetRequestStreamAsync())
                         await requestStream.WriteAsync(body, 0, body.Length);
@@ -145,18 +141,18 @@ namespace UwebServer.Routes
                     webResponse = (HttpWebResponse)we.Response;
                 }
                 var strom = webResponse.GetResponseStream();
+                var closeConnection = string.Compare(webResponse.Headers["Connection"], "close", true) == 0;
 
                 var responseHeaders = webResponse.Headers.AllKeys.Select(n => string.Format("{0}: {1}", n, webResponse.Headers[n]));
                 //if (Tracing.Current.IsEnabled && Tracing.Current.IsHttpHeaderEnabled)
                 //    Tracing.Current.TraceGetResponseHeaders(responseHeaders);
-                responseHeaders = responseHeaders.Where(n => !n.StartsWith("allow:", StringComparison.InvariantCultureIgnoreCase)
-                    && !n.StartsWith("connection:", StringComparison.InvariantCultureIgnoreCase));
+                responseHeaders = responseHeaders.Where(n => !n.StartsWith("allow:", StringComparison.InvariantCultureIgnoreCase));
                 var headerString = string.Join("\r\n", responseHeaders) + "\r\n\r\n";
                 var html = $"{request.HttpResponseString} {(int)webResponse.StatusCode} {webResponse.StatusDescription}\r\n" + headerString;
                 var htmlBytes = Encoding.UTF8.GetBytes(html);
                 await internalRequest.WriteAsync(htmlBytes, 0, htmlBytes.Length);
                 await WriteStreamAsync(internalRequest, strom);
-                return true;
+                request.ConnectionClose = webRequest.KeepAlive == false;
             }
             catch (Exception e)
             {
@@ -166,7 +162,6 @@ namespace UwebServer.Routes
                     await response.SendExceptionAsync(e);
                 }
                 catch { }
-				return false;
             }
             return true;
         }

@@ -8,6 +8,7 @@ namespace UwebServer
         string Id { get; }
         string HttpResponseString { get; }
         Task ReadStreamAsync(Stream stream);
+        bool ConnectionClose { get; set; }
     }
 
     internal interface IInternalRequest

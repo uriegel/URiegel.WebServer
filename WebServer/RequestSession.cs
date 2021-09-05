@@ -36,7 +36,9 @@ namespace UwebServer
         public SocketSession SocketSession { get; private set; }
 
         public Server Server { get; private set; }
-    
+
+        public bool ConnectionClose { get; set; }
+
         public string HttpResponseString
         {
             get
@@ -193,9 +195,9 @@ namespace UwebServer
                 {
                     var response = new Response(this, responseHeaders);
                     if (SocketSession.Routes.TryGetValue(Headers.Host, out var routes) && await Route(routes))
-                        return true;
+                        return !ConnectionClose;
                     if (await Route(SocketSession.Routes[""]))
-                        return true;
+                        return !ConnectionClose;
                     await response.SendNotFoundAsync();
                     return false;
 
