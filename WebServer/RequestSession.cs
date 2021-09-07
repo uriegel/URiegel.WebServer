@@ -194,7 +194,7 @@ namespace UwebServer
                 async Task<bool> ProcessRoutes()
                 {
                     var response = new Response(this, responseHeaders);
-                    if (SocketSession.Routes.TryGetValue(Headers.Host, out var routes) && await Route(routes))
+                    if (SocketSession.Routes.TryGetValue(WithoutPort(Headers.Host), out var routes) && await Route(routes))
                         return !ConnectionClose;
                     if (await Route(SocketSession.Routes[""]))
                         return !ConnectionClose;
@@ -219,6 +219,12 @@ namespace UwebServer
                             return true;
                         }
                         return false;
+                    }
+
+                    string WithoutPort(string host)
+                    {
+                        var pos = host.IndexOf(':');
+                        return pos == -1 ? host : host[..pos];
                     }
                 }
             }
