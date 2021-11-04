@@ -1,0 +1,23 @@
+body {
+    font-family: sans-serif;
+}
+
+.dropcontainer {
+    height: 50px;
+    margin-top: 10px;
+    position: relative;
+    background-color: rgb(197, 255, 197);
+}
+
+.dropcontainer.drop {
+    background-color: lightyellow;
+}
+
+.dropcontainer>div {
+    position: absolute;
+}
+
+#progressBar, #progressBarVideo {
+    height: 100%;
+    background-color: greenyellow;
+}

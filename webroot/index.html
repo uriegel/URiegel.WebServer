@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html lang="de" >
+<head>
+    <title>Upload</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Upload</h1>
+
+    <div class="dropcontainer" ondrop="drop(event)" 
+        ondragover="dragOver(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+        <div id=progressBar></div>
+        <div>Dateien und/oder Ordner hierher ziehen...</div>
+    </div>
+
+    <div class="dropcontainer" ondrop="dropVideo(event)" 
+        ondragover="dragOver(event)" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+        <div id=progressBarVideo></div>
+        <div>Video-Datei hierher ziehen...</div>
+    </div>
+    
+    <script src="script.js"></script>
+</body> 

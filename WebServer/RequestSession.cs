@@ -194,6 +194,9 @@ namespace UwebServer
                 async Task<bool> ProcessRoutes()
                 {
                     var response = new Response(this, responseHeaders);
+                    if (await LetsEncrypt.CheckProcessAsync(Server.Settings, SocketSession.UseTls, Headers, response))
+                        return true;
+
                     if (SocketSession.Routes.TryGetValue(WithoutPort(Headers.Host), out var routes) && await Route(routes))
                         return !ConnectionClose;
                     if (await Route(SocketSession.Routes[""]))

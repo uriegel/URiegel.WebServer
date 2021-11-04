@@ -5,22 +5,19 @@ using System.Threading.Tasks;
 
 namespace UwebServer.Routes
 {
-    public class LetsEncrypt : Route
+    static class LetsEncrypt
     {
-        public LetsEncrypt()
-        {
-            Method = Method.GET;
-            Path = "/.well-known/acme-challenge";
-            Tls = false;
+        public static async Task<bool> CheckProcessAsync(Settings settings, bool isSecure, IRequestHeaders headers, Response response) {
+            if (settings.UseLetsEncrypt && !isSecure && headers.Url.StartsWith("/.well-known/acme-challenge", true, null))
+            {
+                var token = File.ReadAllText(System.IO.Path.Combine(Server.EncryptDirectory, "token"));
+                Console.WriteLine($"Validating LetsEncrypt token : {token}");
+                var ms = new MemoryStream(Encoding.UTF8.GetBytes(token));
+                await response.SendStreamAsync(ms, null, null, true);
+                return true;
+            }
+            else
+                return false;
         }
-
-        public override async Task<bool> ProcessAsync(IRequest request, IRequestHeaders headers, Response response)
-        {
-            var token = File.ReadAllText(System.IO.Path.Combine(Server.EncryptDirectory, "token"));
-            Console.WriteLine($"Validating LetsEncrypt token : {token}");
-            var ms = new MemoryStream(Encoding.UTF8.GetBytes(token));
-            await response.SendStreamAsync(ms, null, null, true);
-            return true;
-        }   
     }
 }

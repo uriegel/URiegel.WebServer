@@ -21,6 +21,7 @@ namespace UwebServer
         public bool CheckRevocation { get; set; }
         public X509Certificate2 Certificate { get; set; }
         public Route[] Routes { get; set; }
+        public bool UseLetsEncrypt { get; set; }
 
         public Settings()
         {
