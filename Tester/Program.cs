@@ -74,17 +74,10 @@ var routeStatic = new Static()
     FilePath = "webroot",
     Host = "illmatic"
 };
-var routeFritz = new ReverseProxy("http://fritz.box")
-{
-    Tls = true,
-    Host = "fritz.uriegel.de",
-};
 
 var server = new Server(new Settings()
 {
     Port = serverPort,
-    TlsPort = serverTlsPort,
-    IsTlsEnabled = true,
     Routes = new Route[]
     {
         routeVideoList,
@@ -93,8 +86,7 @@ var server = new Server(new Settings()
         routeMusicServer,
         routeVideoUpload,
         routeUpload,
-        routeStatic,
-        routeFritz
+        routeStatic
     } 
 });
 
