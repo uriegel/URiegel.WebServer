@@ -26,7 +26,7 @@ namespace UwebServer
             var filename = System.IO.Path.Combine(uploadPath, query.Path, query.Parameters["file"]);
             using var file = File.Create(filename);
             await request.ReadStreamAsync(file);
-            // TODO text result with status code
+            response.SendOkAsync();
             return true;
         }
 

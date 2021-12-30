@@ -70,6 +70,16 @@ namespace UwebServer
             Console.WriteLine($"{requestSession.Id} {status} {statusText}");
         }
 
+        public async Task SendOkAsync()
+        {
+            var status = 200;
+            var statusText = "OK";
+            var htmlHead = CreateErrorHead(status, statusText);
+            var htmlBody = $"";
+            await SendErrorAsync(htmlHead, htmlBody, status, statusText);
+            Console.WriteLine($"{requestSession.Id} {status} {statusText}");
+        }
+
         public async Task SendNotModifiedAsync()
         {
             var headerString = $"{requestSession.HttpResponseString} 304 Not Modified\r\n\r\n";

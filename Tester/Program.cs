@@ -69,6 +69,11 @@ var routeVideoUpload = new UploadRoute("/uploadvideo", uploadVideoPath)
 {
     Host = "illmatic"
 };
+var routeJsonRest = new JsonRest("/Requests/testreq", 
+    async urlQuery => new { Name = "Uwe Riegel", EMail = "uriegel@web.de" })
+    {
+        Host = "illmatic"    
+    };
 var routeStatic = new Static() 
 { 
     FilePath = "webroot",
@@ -86,6 +91,7 @@ var server = new Server(new Settings()
         routeMusicServer,
         routeVideoUpload,
         routeUpload,
+        routeJsonRest,
         routeStatic
     } 
 });
