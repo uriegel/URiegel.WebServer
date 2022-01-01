@@ -8,6 +8,7 @@ namespace UwebServer
 {
     public class Settings
     {
+        public string EncryptDirectory { get; set; } = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "letsencrypt-uweb");
         public IPAddress LocalAddress { get; set; } = IPAddress.Any;
         public string ServerString { get; set; } = "UwebServer";
         public TimeSpan SocketTimeout { get; set; }
