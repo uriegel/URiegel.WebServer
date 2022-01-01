@@ -44,7 +44,7 @@ namespace UwebServer
                 if (Settings.IsTlsEnabled)
                 {
                     Console.WriteLine("Initializing TLS");
-                    Settings.Certificate = new X509Certificate2(Path.Combine(EncryptDirectory, "certificate.pfx"), "uriegel");
+                    Settings.Certificate = new X509Certificate2(Path.Combine(Settings.EncryptDirectory, "certificate.pfx"), "uriegel");
                     Console.WriteLine($"Using certificate: {Settings.Certificate}");
                     if (Settings.CheckRevocation)
                         Console.WriteLine("Checking revocation lists");
