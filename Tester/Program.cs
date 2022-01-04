@@ -156,6 +156,4 @@ class Native
     public extern static int signal(int pid, Callback callback);
 }
 
-
 // TODO: basic authentication
-// TODO: lets encrypt
